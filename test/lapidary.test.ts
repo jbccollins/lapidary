@@ -1,4 +1,5 @@
-import Lapidary, { Item } from '../src/lapidary'
+import Lapidary, { Item, Facets, StringOperations } from '../src/lapidary'
+import { STRING } from '../src/constants'
 
 const items: Item[] = [
   {
@@ -9,10 +10,11 @@ const items: Item[] = [
   }
 ]
 
-const facets = {
+const facets: Facets = {
   name: {
-    type: 'string',
-    evaluator: (item, self, evaluatorContext) => item.name === evaluatorContext.name
+    operations: StringOperations
+    //evaluationGenerator: StringEqualityEvaluationGenerator
+    //evaluator: (item: Item, self: Lapidary, evaluatorContext) => (item.name === evaluatorContext.name)
   }
 }
 
@@ -23,11 +25,16 @@ describe('Instantiation', () => {
   })
 })
 describe('String Queries', () => {
-  it('succeeds given valid name - BASIC', () => {
+  it('succeeds given empty query string - BASIC', () => {
     const lapidary = new Lapidary(items, facets, context)
-    lapidary.parseQuery('name:="War and Peace"')
+    lapidary.parseQuery('')
     expect(lapidary).toBeInstanceOf(Lapidary)
   }),
+    it('succeeds given valid name - BASIC', () => {
+      const lapidary = new Lapidary(items, facets, context)
+      lapidary.parseQuery('name:="War and Peace"')
+      expect(lapidary).toBeInstanceOf(Lapidary)
+    }),
     it('fails given invalid name - BASIC', () => {
       const lapidary = new Lapidary(items, facets, context)
       lapidary.parseQuery('derp:="War and Peace"')

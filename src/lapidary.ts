@@ -1,3 +1,4 @@
+// https://gist.github.com/scottrippey/1349099/cd6b993f0cc8595fd231594576d7c4b0a6d611d2
 // Consider abstract facets like "in:cart", "is:duplicate"
 // countof:>=20 // Are there at least 20 of this thing in the list of items?
 // in:cart would require passing a scoped context object to Lapidary
@@ -70,47 +71,64 @@ Lapidary ({
 })
 */
 
-const LESS_THAN = ':<'
-const GREATER_THAN = ':>'
-const LESS_THAN_OR_EQUAL = ':<='
-const GREATHER_THAN_OR_EQUAL = ':>='
-const EQUAL = ':='
-export const COMPARISONS = [
-  LESS_THAN,
-  GREATER_THAN,
-  LESS_THAN_OR_EQUAL,
-  GREATHER_THAN_OR_EQUAL,
-  EQUAL
-]
+// Recursively generate nested arrays of filter generation functions based on parentheses
+// BuildFilterGenerators(queryString) {
+//     const queryStringsArr = splitQuery(queryString);
+//     if (len(queryStringsArr) > 1) {
+//         return queryStringsArr.map(qs => generate(qs))
+//     }
+//     const FilterGenerator = FilterGenerator(queryStringsArr[0]);
+//     return [FilterGenerator];
+// }
 
-type QueryEvaluator = (item: Item, l: Lapidary, evaluatorContext: any) => boolean
-type FilterGenerator = (facetKey: keyof Item, expectedFacetValue: string) => QueryEvaluator
+import { EQUAL, COMPARISONS, STRING, NUMERIC } from './constants'
 
-interface OperationMapping {
+/*** TYPES ***/
+export type FilterEvaluator = (item: Item, l: Lapidary, evaluatorContext: any) => boolean
+export type FilterGenerator = (facetKey: keyof Facets, expression: any) => FilterEvaluator
+export type Facets = {
+  [key: string]: Facet
+}
+export type Facet = {
+  //type: string, // TODO: Make this enum from [STRING, NUMERIC],
+  operations: OperationMapping
+  //evaluationGenerator: FilterGenerator,
+  //evaluator: FilterEvaluator,
+}
+export type Item = {
+  [k in keyof Facets]: string
+  //[k: string]: string
+}
+
+/*** END TYPES ***/
+
+/*** INTERFACES ***/
+export interface OperationMapping {
   [key: string]: FilterGenerator
 }
+/*** END INTERFACES ***/
 
-const StringOperations: OperationMapping = {
-  // Strip double quotes when evaluating strings
-  [EQUAL]: (facetKey: keyof Item, expectedFacetValue: string) => (
-    item: Item,
-    l: Lapidary,
-    evaluatorContext: any
-  ) => item[facetKey] === expectedFacetValue.replace(/['"]+/g, '')
+export const StringEqualityEvaluationGenerator: FilterGenerator = (
+  facetKey: keyof Facets,
+  expression: string
+): FilterEvaluator => {
+  // String quotes when doing string operations
+  const context = { value: expression.replace(/['"]+/g, '') }
+  return (item: Item, l: Lapidary, evaluatorContext = context) => {
+    return item[facetKey] === evaluatorContext.value
+  }
 }
 
-export const JOINS = [' :and: ', ' :or: ']
-
-export interface Item {
-  name: string
+export const StringOperations: OperationMapping = {
+  [EQUAL]: StringEqualityEvaluationGenerator
 }
 
 export default class Lapidary {
   items: Item[]
-  facets: {}
+  facets: Facets
   context: {}
 
-  constructor(items: Item[], facets: {}, context: {}) {
+  constructor(items: Item[], facets: Facets, context: {}) {
     this.items = items
     this.facets = facets
     this.context = context
@@ -119,20 +137,30 @@ export default class Lapidary {
   parseQuery(query: string): Item[] {
     // https://stackoverflow.com/a/16261693
     const searchTerms = query.match(/(?:[^\s"]+|"[^"]*")+/g) || []
-    const filters: QueryEvaluator[] = []
+    const filters: FilterEvaluator[] = []
     searchTerms.forEach(s => {
       COMPARISONS.forEach(c => {
-        const [key, expectedFacetValue] = s.split(c)
-        const facetKey = key as keyof Item
-        if (facetKey && expectedFacetValue) {
-          filters.push(StringOperations[c](facetKey, expectedFacetValue))
+        const [key, expression] = s.split(c)
+        const facetKey = key as keyof Facets
+
+        if (expression && facetKey) {
+          if (!this.facets[facetKey]) {
+            console.warn('Invalid Key', facetKey)
+            return
+          }
+          const filterGenerator: FilterGenerator = this.facets[facetKey].operations[c]
+          filters.push(filterGenerator(facetKey, expression))
         }
       })
     })
 
+    console.log(filters)
+
     const result = this.items.filter(item => {
+      // TODO: Does .every short circuit?
       return filters.every(f => f(item, this, {}))
     })
+
     console.log(result)
     return result
   }
