@@ -5,6 +5,7 @@
   "keywords": [],
   "main": "dist/lapidary.umd.js",
   "module": "dist/lapidary.es5.js",
+  "iife": "dist/lapidary.iife.js",
   "typings": "dist/types/lapidary.d.ts",
   "files": [
     "dist"

@@ -2,6 +2,12 @@
 // Consider abstract facets like "in:cart", "is:duplicate"
 // countof:>=20 // Are there at least 20 of this thing in the list of items?
 // in:cart would require passing a scoped context object to Lapidary
+
+/*
+
+    Consider using one global and one transient context associated with each Lapidary() instead of using context as a parameter to FilterEvaluators
+*/
+
 /*
 const inventory = {
     items: [
@@ -113,9 +119,9 @@ export const StringEqualityEvaluationGenerator: FilterGenerator = (
   expression: string
 ): FilterEvaluator => {
   // String quotes when doing string operations
-  const context = { value: expression.replace(/['"]+/g, '') }
-  return (item: Item, l: Lapidary, evaluatorContext = context) => {
-    return item[facetKey] === evaluatorContext.value
+  const value = expression.replace(/['"]+/g, '')
+  return (item: Item, l: Lapidary, {}) => {
+    return item[facetKey] === value
   }
 }
 
@@ -145,7 +151,8 @@ export default class Lapidary {
 
         if (expression && facetKey) {
           if (!this.facets[facetKey]) {
-            console.warn('Invalid Key', facetKey)
+            console.warn('Invalid Facet Key', facetKey)
+            throw new Error(`Invalid facet key: ${facetKey}`)
             return
           }
           const filterGenerator: FilterGenerator = this.facets[facetKey].operations[c]
@@ -154,14 +161,12 @@ export default class Lapidary {
       })
     })
 
-    console.log(filters)
-
     const result = this.items.filter(item => {
       // TODO: Does .every short circuit?
       return filters.every(f => f(item, this, {}))
     })
 
-    console.log(result)
+    console.log('result', result)
     return result
   }
 }

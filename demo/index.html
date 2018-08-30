@@ -1,0 +1,33 @@
+<html>
+	<head>
+		<script type='text/javascript' src='../dist/lapidary.iife.js'></script>
+	</head>
+	<body>
+		<script>
+			var items = [
+			  {
+			    name: 'War and Peace'
+			  },
+			  {
+			    name: 'Harry Potter and the Sorcerers Stone'
+			  }
+			];
+			var facets = {
+			  name: {
+			    operations: lapidary.StringOperations
+			    //evaluationGenerator: StringEqualityEvaluationGenerator
+			    //evaluator: (item: Item, self: Lapidary, evaluatorContext) => (item.name === evaluatorContext.name)
+			  }
+			};
+			console.log(lapidary);
+			var Lapidary = lapidary.default;
+			var derp = new Lapidary(items, facets, {});
+			console.log(derp);
+			var handleInputChange = function() {
+				var query = document.getElementById("lapidary-input").value;
+				console.log(query);
+			}
+		</script>
+		<input id="lapidary-input" onchange="handleInputChange()" type="text"/>
+	</body>
+</html>

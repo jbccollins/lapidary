@@ -25,19 +25,18 @@ describe('Instantiation', () => {
   })
 })
 describe('String Queries', () => {
-  it('succeeds given empty query string - BASIC', () => {
+  it('Returns all results given an empty query string', () => {
     const lapidary = new Lapidary(items, facets, context)
-    lapidary.parseQuery('')
-    expect(lapidary).toBeInstanceOf(Lapidary)
+    const results = lapidary.parseQuery('')
+    expect(results).toEqual(items)
   }),
-    it('succeeds given valid name - BASIC', () => {
+    it('Returns one result given a single queried name', () => {
       const lapidary = new Lapidary(items, facets, context)
-      lapidary.parseQuery('name:="War and Peace"')
-      expect(lapidary).toBeInstanceOf(Lapidary)
+      const results = lapidary.parseQuery('name:="War and Peace"')
+      expect(results).toEqual([{ name: 'War and Peace' }])
     }),
     it('fails given invalid name - BASIC', () => {
       const lapidary = new Lapidary(items, facets, context)
-      lapidary.parseQuery('derp:="War and Peace"')
-      expect(lapidary).toBeInstanceOf(Lapidary)
+      expect(lapidary.parseQuery('derp:="War and Peace"')).toThrow()
     })
 })
