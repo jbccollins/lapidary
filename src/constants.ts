@@ -1,8 +1,8 @@
-const LESS_THAN = ':<'
-const GREATER_THAN = ':>'
-const LESS_THAN_OR_EQUAL = ':<='
-const GREATHER_THAN_OR_EQUAL = ':>='
-const EQUAL = ':='
+const LESS_THAN = ':<:'
+const GREATER_THAN = ':>:'
+const LESS_THAN_OR_EQUAL = ':<=:'
+const GREATHER_THAN_OR_EQUAL = ':>=:'
+const EQUAL = ':=:'
 
 const STRING = 'string'
 const NUMERIC = 'numeric'
@@ -14,7 +14,10 @@ const VALID_COMPARISONS = {
   NUMERIC: [LESS_THAN, GREATER_THAN, LESS_THAN_OR_EQUAL, GREATHER_THAN_OR_EQUAL, EQUAL]
 }
 
-const JOINS = [' :and: ', ' :or: ']
+const AND = 'AND'
+const OR = 'OR'
+
+const JOINS = [AND, OR]
 
 export {
   STRING,
@@ -26,5 +29,7 @@ export {
   EQUAL,
   COMPARISONS,
   VALID_COMPARISONS,
+  AND,
+  OR,
   JOINS
 }
