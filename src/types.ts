@@ -1,6 +1,6 @@
 import Lapidary from './lapidary'
 /*** TYPES ***/
-export type FilterEvaluator = (item: Item, l: Lapidary, evaluatorContext: any) => boolean
+export type FilterEvaluator = (item: Item, l: Lapidary) => boolean
 export type FilterGenerator = (facetKey: keyof Facets, expression: any) => FilterEvaluator
 export type Facets = {
   [key: string]: Facet

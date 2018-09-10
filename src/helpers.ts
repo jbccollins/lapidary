@@ -6,9 +6,10 @@ import {
   Facets,
   Item
 } from './types'
+import Lapidary from './lapidary'
 import { AND, OR, COMPARISONS } from './constants'
 // https://gist.github.com/scottrippey/1349099
-const SplitBalanced = (
+const splitBalanced = (
   input: string,
   split: string = ' ',
   open: string = '',
@@ -27,11 +28,13 @@ const SplitBalanced = (
   const stack: string[] = []
   let buffer: string[] = []
   const results: string[] = []
-  input.replace(r, ($0, $1, $e, $o, $c, $t, $s, i) => {
+  // Clone the input string
+  const clonedInput = '' + input
+  clonedInput.replace(r, ($0, $1, $e, $o, $c, $t, $s, i) => {
     if ($e) {
       // Escape
       buffer.push($1, $s || $o || $c || $t)
-      return
+      return $0 // Does nothing. Just satisfies Typescript's insatiable thirst for a string return;
     } else if ($o)
       // Open
       stack.push($o)
@@ -48,10 +51,11 @@ const SplitBalanced = (
         buffer.push($1)
         results.push(buffer.join(''))
         buffer = []
-        return
+        return $0 // Does nothing. Just satisfies Typescript's insatiable thirst for a string return;
       }
     }
     buffer.push($0)
+    return $0 // Does nothing. Just satisfies Typescript's insatiable thirst for a string return;
   })
   return results
 }
@@ -60,40 +64,61 @@ const DELIMITER = ' '
 
 // Idk how to Type the return value for recursive functions
 // This should ultimately return String[][]
-const recursivelySplitString = (input: string): any => {
+const recursivelySplitString = (input: string, depth: number): any => {
   let strippedInput: string = input
   if (strippedInput.startsWith('(') && strippedInput.endsWith(')')) {
     strippedInput = strippedInput.slice(1, -1)
   }
-  const split: string[] = SplitBalanced(strippedInput)
+  const split: string[] = splitBalanced(strippedInput)
   if (split.length === 0 || split.length === 1) {
-    return input // TODO This will fail for basic queries that do not require recursion
+    if (depth === 0) {
+      // If no recursion is needed
+      return [input]
+    }
+    return input
   }
-  return split.map(s => recursivelySplitString(s))
+  return split.map(s => recursivelySplitString(s, depth + 1))
 }
 
 const predicateToFilterEvaluator = (predicate: string, facets: Facets): FilterEvaluator => {
   for (let c of COMPARISONS) {
+    // TODO: split on "key:<STUFF>:expression" instead of iterating over every comparison
     const [key, expression] = predicate.split(c)
     const facetKey = key as keyof Facets
     if (expression && facetKey) {
-      console.log(c, facetKey, expression)
       if (!facets[facetKey]) {
         throw new Error(`Invalid facet key: ${facetKey}`)
       }
       const filterGenerator: FilterGenerator = facets[facetKey].operations[c]
-      console.log(facets[facetKey].operations[c])
       return filterGenerator(facetKey, expression)
     }
   }
-  return null // TODO: Gonna need a default FilterEvaluator
+  throw new Error('Invalid syntax')
 }
 
 export const traverseEvaluationTree = (
   item: Item,
-  evalutionTree: EvaluationTree | EvaluationTreeLeaf
+  evalutionTree: EvaluationTree | EvaluationTreeLeaf | null,
+  l: Lapidary
 ): boolean => {
-  return false
+  if (!evalutionTree) {
+    return false
+  }
+  // TODO: I have no idea how to do typechecking on union types. Maybe refactor the EvaluationTree and EvaluationTreeLeaf to be the same type.
+  if (evalutionTree.hasOwnProperty('filterEvaluator')) {
+    return (<EvaluationTreeLeaf>evalutionTree).filterEvaluator(item, l)
+  }
+  const tree = <EvaluationTree>evalutionTree
+  // TODO: This is kinda messy.... And I'm not even sure the last cas is necessary
+  if (tree.left && tree.right) {
+    if (tree.joinType === AND) {
+      return (
+        traverseEvaluationTree(item, tree.left, l) && traverseEvaluationTree(item, tree.right, l)
+      )
+    }
+    return traverseEvaluationTree(item, tree.left, l) || traverseEvaluationTree(item, tree.right, l)
+  }
+  return traverseEvaluationTree(item, tree.left, l)
 }
 
 const recursivelyGenerateEvaluators = (
@@ -101,12 +126,8 @@ const recursivelyGenerateEvaluators = (
   facets: Facets
 ): EvaluationTree | EvaluationTreeLeaf => {
   if (Array.isArray(split)) {
-    if (split.length === 0) {
-      return {
-        left: null,
-        joinType: null,
-        right: null
-      }
+    if (split.length < 1) {
+      throw new Error('Invalid syntax')
     }
     //Case like ((foo:=:bar)) which will become [["foo:=bar"]]
     if (split.length === 1) {
@@ -141,11 +162,9 @@ const generateEvaluationTree = (
   input: string,
   facets: Facets
 ): EvaluationTree | EvaluationTreeLeaf => {
-  const split: String[] = recursivelySplitString(input)
-  console.log(split)
+  const split: String[] = recursivelySplitString(input, 0)
   const evaluationTree = recursivelyGenerateEvaluators(split, facets)
-  console.log(evaluationTree)
   return evaluationTree
 }
 
-export { SplitBalanced, generateEvaluationTree }
+export { generateEvaluationTree }

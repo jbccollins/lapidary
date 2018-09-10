@@ -1,15 +1,20 @@
 <html>
 	<head>
 		<script type='text/javascript' src='../dist/lapidary.iife.js'></script>
+		<link rel="stylesheet" href="./style.css" media="screen" />
 	</head>
 	<body>
 		<script>
 			var items = [
 			  {
-			    name: 'War and Peace'
+			    name: 'War and Peace',
+			    edition: 2,
+			    pagecount: 500,
 			  },
 			  {
-			    name: 'Harry Potter and the Sorcerers Stone'
+			    name: 'Harry Potter and the Sorcerers Stone',
+			    edition: 1,
+			    pagecount: 300
 			  }
 			];
 			var facets = {
@@ -17,16 +22,20 @@
 			    operations: lapidary.StringOperations
 			    //evaluationGenerator: StringEqualityEvaluationGenerator
 			    //evaluator: (item: Item, self: Lapidary, evaluatorContext) => (item.name === evaluatorContext.name)
+			  },
+			  edition: {
+			  	operations: lapidary.NumericOperations
+			  },
+			  pagecount: {
+			  	operations: lapidary.NumericOperations
 			  }
 			};
-			console.log(lapidary);
-			var Lapidary = lapidary.default;
-			var derp = new Lapidary(items, facets, {});
-			console.log(derp);
+			var l = new lapidary.Lapidary(items, facets, {});
 			var handleInputChange = function() {
 				var query = document.getElementById("lapidary-input").value;
 				//console.log(query);
-				//console.log(Lapidary.parseQuery(query));
+				var results = lapidary.parseQuery(query, l);
+				document.getElementById("output").innerHTML = JSON.stringify(results);
 			}
 		</script>
 		<input id="lapidary-input" onchange="handleInputChange()" type="text"/>

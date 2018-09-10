@@ -1,6 +1,15 @@
-import { EQUAL, COMPARISONS, STRING, NUMERIC, AND, OR } from './constants'
-import { FilterEvaluator, FilterGenerator, Item, Facets } from './types'
-import { SplitBalanced, generateEvaluationTree, traverseEvaluationTree } from './helpers'
+import { StringOperations, NumericOperations } from './operations'
+import { EvaluationTree, EvaluationTreeLeaf, Item, Facets } from './types'
+import { generateEvaluationTree, traverseEvaluationTree } from './helpers'
+
+const parseQuery = (query: string, l: Lapidary): Item[] => {
+  if (query.trim() === '') {
+    return l.items
+  }
+  const evalutionTree: EvaluationTree | EvaluationTreeLeaf = generateEvaluationTree(query, l.facets)
+  const result: Item[] = l.items.filter(item => traverseEvaluationTree(item, evalutionTree, l))
+  return result
+}
 
 export default class Lapidary {
   items: Item[]
@@ -12,33 +21,6 @@ export default class Lapidary {
     this.facets = facets
     this.context = context
   }
-
-  parseQuery(query: string): Item[] {
-    // https://stackoverflow.com/a/16261693
-    const searchTerms = query.match(/(?:[^\s"]+|"[^"]*")+/g) || []
-    const filters: FilterEvaluator[] = []
-    const evalutionTree = generateEvaluationTree(query, this.facets)
-    //console.log(searchTerms);
-    searchTerms.forEach(s => {
-      COMPARISONS.forEach(c => {
-        const [key, expression] = s.split(c)
-        const facetKey = key as keyof Facets
-
-        if (expression && facetKey) {
-          if (!this.facets[facetKey]) {
-            throw new Error(`Invalid facet key: ${facetKey}`)
-          }
-          const filterGenerator: FilterGenerator = this.facets[facetKey].operations[c]
-          filters.push(filterGenerator(facetKey, expression))
-        }
-      })
-    })
-
-    const result = this.items.filter(item => {
-      return filters.every(f => f(item, this, {}))
-    })
-
-    console.log('result', result)
-    return result
-  }
 }
+
+export { parseQuery, StringOperations, NumericOperations, Lapidary }

@@ -1,4 +1,4 @@
-import Lapidary from '../src/lapidary'
+import Lapidary, { parseQuery } from '../src/lapidary'
 import { STRING } from '../src/constants'
 
 import { Item, Facets } from '../src/types'
@@ -47,59 +47,74 @@ const facets: Facets = {
 }
 
 const context = {}
-// describe('Instantiation', () => {
-//   it('Lapidary is instantiable', () => {
-//     expect(new Lapidary(items, facets, context)).toBeInstanceOf(Lapidary)
-//   }),
-//   it('Returns all results given an empty query', () => {
-//     const lapidary = new Lapidary(items, facets, context)
-//     const results = lapidary.parseQuery('')
-//     expect(results).toEqual(items)
-//   }),
-//   it('Fails given invalid facet key', () => {
-//     const lapidary = new Lapidary(items, facets, context)
-//     expect(() => lapidary.parseQuery('derp:=:"War and Peace"')).toThrow(`Invalid facet key: derp`)
-//   })
-//   // it('Handles escaped characters correctly', () => {
-//   //   const lapidary = new Lapidary(items, facets, context)
-//   //   const results = lapidary.parseQuery('name:=:"It\\\'s spelled just like escape"')
-//   //   expect(results).toEqual([ESCAPED])
-//   // })
-// })
-// describe('String Queries', () => {
-//   it('Returns one result given a single queried name', () => {
-//     const lapidary = new Lapidary(items, facets, context)
-//     const results = lapidary.parseQuery('name:=:"Harry Potter and the Sorcerers Stone"')
-//     expect(results).toEqual([HP_1ST])
-//   })
-// })
+describe('Instantiation', () => {
+  it('Lapidary is instantiable', () => {
+    expect(new Lapidary(items, facets, context)).toBeInstanceOf(Lapidary)
+  }),
+    it('Returns all results given an empty query', () => {
+      const lapidary = new Lapidary(items, facets, context)
+      const results = parseQuery('', lapidary)
+      expect(results).toEqual(items)
+    }),
+    it('Fails given invalid facet key', () => {
+      const lapidary = new Lapidary(items, facets, context)
+      expect(() => parseQuery('derp:=:"War and Peace"', lapidary)).toThrow(
+        `Invalid facet key: derp`
+      )
+    })
+  // it('Handles escaped characters correctly', () => {
+  //   const lapidary = new Lapidary(items, facets, context)
+  //   const results = parseQuery(`name:=:"It's spelled just like escape"`)
+  //   expect(results).toEqual([ESCAPED])
+  // })
+})
+describe('String Queries', () => {
+  it('Returns one result given a single queried name', () => {
+    const lapidary = new Lapidary(items, facets, context)
+    const results = parseQuery('name:=:"Harry Potter and the Sorcerers Stone"', lapidary)
+    expect(results).toEqual([HP_1ST])
+  })
+})
 
-// describe('Numeric Queries', () => {
-//   it('Fails on NaN', () => {
-//     const lapidary = new Lapidary(items, facets, context)
-//     expect(() => lapidary.parseQuery('edition:=:LMAO')).toThrow(`Expected a numeric value for edition. Received "LMAO"`)
-//   }),
-//   it('Returns correctly given a valid number', () => {
-//     const lapidary = new Lapidary(items, facets, context)
-//     const results = lapidary.parseQuery('edition:=:2')
-//     expect(results).toEqual([WP_2ND, MDT_2ND])
-//   })
-// })
+describe('Numeric Queries', () => {
+  it('Fails on NaN', () => {
+    const lapidary = new Lapidary(items, facets, context)
+    expect(() => parseQuery('edition:=:LMAO', lapidary)).toThrow(
+      `Expected a numeric value for edition. Received "LMAO"`
+    )
+  }),
+    it('Returns correctly given a valid number', () => {
+      const lapidary = new Lapidary(items, facets, context)
+      const results = parseQuery('edition:=:2', lapidary)
+      expect(results).toEqual([WP_2ND, MDT_2ND])
+    })
+})
 
 describe('Join Queries', () => {
-  // it('Handles implicit AND', () => {
-  //   const lapidary = new Lapidary(items, facets, context)
-  //   const results = lapidary.parseQuery('name:=:"My Derpy Turtle" edition:=:2')
-  //   expect(results).toEqual([MDT_2ND])
-  // }),
-  // it('Handles explicit AND', () => {
-  //   const lapidary = new Lapidary(items, facets, context)
-  //   const results = lapidary.parseQuery('name:=:"My Derpy Turtle" AND edition:=:2')
-  //   expect(results).toEqual([MDT_2ND])
-  // }),
-  it('Handles nested joins', () => {
+  it('Handles implicit AND', () => {
     const lapidary = new Lapidary(items, facets, context)
-    const results = lapidary.parseQuery('name:=:"My Derpy Turtle" AND (edition:=:2 OR edition:=:3)')
+    const results = parseQuery('name:=:"My Derpy Turtle" edition:=:2', lapidary)
     expect(results).toEqual([MDT_2ND])
-  })
+  }),
+    it('Handles explicit AND', () => {
+      const lapidary = new Lapidary(items, facets, context)
+      const results = parseQuery('name:=:"My Derpy Turtle" AND edition:=:2', lapidary)
+      expect(results).toEqual([MDT_2ND])
+    }),
+    it('Handles nested joins', () => {
+      const lapidary = new Lapidary(items, facets, context)
+      const results = parseQuery(
+        'name:=:"My Derpy Turtle" AND (edition:=:2 OR edition:=:3)',
+        lapidary
+      )
+      expect(results).toEqual([MDT_2ND])
+    }),
+    it('Handles extraneous parens', () => {
+      const lapidary = new Lapidary(items, facets, context)
+      const results = parseQuery(
+        '(name:=:"My Derpy Turtle" AND (edition:=:2 OR edition:=:3))',
+        lapidary
+      )
+      expect(results).toEqual([MDT_2ND])
+    })
 })
