@@ -81,19 +81,21 @@ const recursivelySplitString = (input: string, depth: number): any => {
 }
 
 const predicateToFilterEvaluator = (predicate: string, facets: Facets): FilterEvaluator => {
-  for (let c of COMPARISONS) {
-    // TODO: split on "key:<STUFF>:expression" instead of iterating over every comparison
-    const [key, expression] = predicate.split(c)
-    const facetKey = key as keyof Facets
-    if (expression && facetKey) {
-      if (!facets[facetKey]) {
-        throw new Error(`Invalid facet key: ${facetKey}`)
-      }
-      const filterGenerator: FilterGenerator = facets[facetKey].operations[c]
-      return filterGenerator(facetKey, expression)
+  // \w+:\w*:\w+ Should be the regex I need I think...
+  const [key, operation, expression] = predicate.split(':')
+  const facetKey = key as keyof Facets
+  if (expression && facetKey) {
+    if (!facets[facetKey]) {
+      throw new Error(`Invalid facet key: ${facetKey}`)
     }
   }
-  throw new Error('Invalid syntax')
+  const filterGenerator: FilterGenerator = facets[facetKey].operations[operation]
+
+  if (!filterGenerator) {
+    throw new Error(`Invalid operation ${operation} for ${facetKey}`)
+  }
+
+  return filterGenerator(facetKey, expression)
 }
 
 export const traverseEvaluationTree = (
@@ -109,7 +111,7 @@ export const traverseEvaluationTree = (
     return (<EvaluationTreeLeaf>evalutionTree).filterEvaluator(item, l)
   }
   const tree = <EvaluationTree>evalutionTree
-  // TODO: This is kinda messy.... And I'm not even sure the last cas is necessary
+  // TODO: This is kinda messy.... And I'm not even sure the last case is necessary
   if (tree.left && tree.right) {
     if (tree.joinType === AND) {
       return (
@@ -129,7 +131,7 @@ const recursivelyGenerateEvaluators = (
     if (split.length < 1) {
       throw new Error('Invalid syntax')
     }
-    //Case like ((foo:=:bar)) which will become [["foo:=bar"]]
+    //Case like (foo:=:bar) which will become ["foo:=bar"]
     if (split.length === 1) {
       return {
         left: recursivelyGenerateEvaluators(split[0], facets),

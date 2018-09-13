@@ -10,7 +10,11 @@
     Consider using one global and one transient context associated with each Lapidary() instead of using context as a parameter to FilterEvaluators
 */
 
+/* Consider using performance.now() to determine expensive branches. Prefer evaluating cheap branches when possible */
 /*
+
+/*When making the input component make sure double clicks hilite stuff that respects
+The syntax*/
 const inventory = {
     items: [
         {

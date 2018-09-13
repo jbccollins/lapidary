@@ -55,25 +55,36 @@ describe('Instantiation', () => {
       const lapidary = new Lapidary(items, facets, context)
       const results = parseQuery('', lapidary)
       expect(results).toEqual(items)
-    }),
-    it('Fails given invalid facet key', () => {
-      const lapidary = new Lapidary(items, facets, context)
-      expect(() => parseQuery('derp:=:"War and Peace"', lapidary)).toThrow(
-        `Invalid facet key: derp`
-      )
     })
   // it('Handles escaped characters correctly', () => {
   //   const lapidary = new Lapidary(items, facets, context)
-  //   const results = parseQuery(`name:=:"It's spelled just like escape"`)
+  //   const results = parseQuery(`name:=:"It's spelled just like escape"`, lapidary)
   //   expect(results).toEqual([ESCAPED])
   // })
 })
+describe('Generic Malformed Queries', () => {
+  it('Fails given invalid facet key', () => {
+    const lapidary = new Lapidary(items, facets, context)
+    expect(() => parseQuery('derp:=:"War and Peace"', lapidary)).toThrow(`Invalid facet key: derp`)
+  }),
+    it('Fails given invalid operation', () => {
+      const lapidary = new Lapidary(items, facets, context)
+      expect(() => parseQuery('name:DERPS:"War and Peace"', lapidary)).toThrow(
+        `Invalid operation DERPS for name`
+      )
+    })
+})
 describe('String Queries', () => {
-  it('Returns one result given a single queried name', () => {
+  it('Evaluates equality', () => {
     const lapidary = new Lapidary(items, facets, context)
     const results = parseQuery('name:=:"Harry Potter and the Sorcerers Stone"', lapidary)
     expect(results).toEqual([HP_1ST])
-  })
+  }),
+    it('Evaluates negative equality', () => {
+      const lapidary = new Lapidary(items, facets, context)
+      const results = parseQuery('name:!=:"Harry Potter and the Sorcerers Stone"', lapidary)
+      expect(results).toEqual([WP_1ST, WP_2ND, MDT_1ST, MDT_2ND])
+    })
 })
 
 describe('Numeric Queries', () => {
@@ -83,9 +94,14 @@ describe('Numeric Queries', () => {
       `Expected a numeric value for edition. Received "LMAO"`
     )
   }),
-    it('Returns correctly given a valid number', () => {
+    it('Evaluates equality', () => {
       const lapidary = new Lapidary(items, facets, context)
       const results = parseQuery('edition:=:2', lapidary)
+      expect(results).toEqual([WP_2ND, MDT_2ND])
+    }),
+    it('Evaluates negative equality', () => {
+      const lapidary = new Lapidary(items, facets, context)
+      const results = parseQuery('edition:!=:1', lapidary)
       expect(results).toEqual([WP_2ND, MDT_2ND])
     })
 })
@@ -113,6 +129,14 @@ describe('Join Queries', () => {
       const lapidary = new Lapidary(items, facets, context)
       const results = parseQuery(
         '(name:=:"My Derpy Turtle" AND (edition:=:2 OR edition:=:3))',
+        lapidary
+      )
+      expect(results).toEqual([MDT_2ND])
+    }),
+    it('Handles nested parens', () => {
+      const lapidary = new Lapidary(items, facets, context)
+      const results = parseQuery(
+        '(name:=:"My Derpy Turtle" AND (edition:=:2 OR (edition:=:3 AND edition:!=:1)))',
         lapidary
       )
       expect(results).toEqual([MDT_2ND])
