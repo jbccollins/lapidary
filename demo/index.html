@@ -17,6 +17,16 @@
 			    pagecount: 300
 			  },
 			  {
+			    name: 'Harry Potter and the Order of the Phoenix',
+			    edition: 1,
+			    pagecount: 560
+			  },
+			  {
+			  	name: 'The Return of the King',
+			  	edition: 2,
+			  	pagecount: 446
+			  },
+			  {
 			  	name: 'Herp a derp',
 			  	edition: 1,
 			  	pagecount: 320
@@ -25,8 +35,6 @@
 			var facets = {
 			  name: {
 			    operations: lapidary.StringOperations
-			    //evaluationGenerator: StringEqualityEvaluationGenerator
-			    //evaluator: (item: Item, self: Lapidary, evaluatorContext) => (item.name === evaluatorContext.name)
 			  },
 			  edition: {
 			  	operations: lapidary.NumericOperations
@@ -40,8 +48,17 @@
 				var query = document.getElementById("lapidary-input").value;
 				//console.log(query);
 				var results = lapidary.parseQuery(query, l);
-				document.getElementById("output").innerHTML = JSON.stringify(results);
+				//var resultsArr = JSON.stringify(results);
+				var outputDiv = document.getElementById("output");
+				outputDiv.innerHTML = "";
+				for (r of results) {
+					var e = document.createElement('div');
+					e.innerHTML = JSON.stringify(r);
+					outputDiv.appendChild(e);
+				}
+
 			}
+			document.addEventListener('DOMContentLoaded', handleInputChange, false);
 		</script>
 		<input id="lapidary-input" onchange="handleInputChange()" type="text"/>
 		<div id="output"></div>

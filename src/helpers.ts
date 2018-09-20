@@ -123,7 +123,7 @@ export const traverseEvaluationTree = (
   return traverseEvaluationTree(item, tree.left, l)
 }
 
-const recursivelyGenerateEvaluators = (
+export const recursivelyGenerateEvaluators = (
   split: any,
   facets: Facets
 ): EvaluationTree | EvaluationTreeLeaf => {

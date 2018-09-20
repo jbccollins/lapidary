@@ -9,11 +9,18 @@ import {
   NUMERIC,
   GREATER_THAN_OR_EQUAL,
   LESS_THAN_OR_EQUAL,
+  LESS_THAN,
+  GREATER_THAN,
   CONTAINS
 } from './constants'
 
 // String quotes when doing string operations
-const cleanString = (s: string) => s.replace(/['"]+/g, '')
+const cleanString = (s: string, facetKey: string | number) => {
+  if (typeof s === 'undefined') {
+    throw new Error(`Expected a value for ${facetKey}. Received "undefined"`)
+  }
+  return s.replace(/['"]+/g, '')
+}
 // Interpret string value as number
 const cleanNumber = (n: string, facetKey: string | number) => {
   const num = Number(n)
@@ -28,7 +35,7 @@ const StringEqualityEvaluationGenerator: FilterGenerator = (
   expression: string
 ): FilterEvaluator => {
   return (item: Item, l: Lapidary) => {
-    return item[facetKey] === cleanString(expression)
+    return item[facetKey] === cleanString(expression, facetKey)
   }
 }
 
@@ -37,16 +44,16 @@ const StringContainsEvaluationGenerator: FilterGenerator = (
   expression: string
 ): FilterEvaluator => {
   return (item: Item, l: Lapidary) => {
-    return item[facetKey].indexOf(cleanString(expression)) >= 0
+    return item[facetKey].indexOf(cleanString(expression, facetKey)) >= 0
   }
 }
 
-const NegativeStringEqualityEvaluationGenerator: FilterGenerator = (
+const StringNegativeEqualityEvaluationGenerator: FilterGenerator = (
   facetKey: keyof Facets,
   expression: string
 ): FilterEvaluator => {
   return (item: Item, l: Lapidary) => {
-    return item[facetKey] !== cleanString(expression)
+    return item[facetKey] !== cleanString(expression, facetKey)
   }
 }
 
@@ -59,12 +66,21 @@ const NumericEqualityEvaluationGenerator: FilterGenerator = (
   }
 }
 
-const NegativeNumericEqualityEvaluationGenerator: FilterGenerator = (
+const NumericNegativeEqualityEvaluationGenerator: FilterGenerator = (
   facetKey: keyof Facets,
   expression: string
 ): FilterEvaluator => {
   return (item: Item, l: Lapidary) => {
     return item[facetKey] !== cleanNumber(expression, facetKey)
+  }
+}
+
+const NumericLTEvaluationGenerator: FilterGenerator = (
+  facetKey: keyof Facets,
+  expression: string
+): FilterEvaluator => {
+  return (item: Item, l: Lapidary) => {
+    return item[facetKey] < cleanNumber(expression, facetKey)
   }
 }
 
@@ -74,6 +90,15 @@ const NumericLTEEvaluationGenerator: FilterGenerator = (
 ): FilterEvaluator => {
   return (item: Item, l: Lapidary) => {
     return item[facetKey] <= cleanNumber(expression, facetKey)
+  }
+}
+
+const NumericGTEvaluationGenerator: FilterGenerator = (
+  facetKey: keyof Facets,
+  expression: string
+): FilterEvaluator => {
+  return (item: Item, l: Lapidary) => {
+    return item[facetKey] > cleanNumber(expression, facetKey)
   }
 }
 
@@ -88,22 +113,19 @@ const NumericGTEEvaluationGenerator: FilterGenerator = (
 
 const StringOperations: OperationMapping = {
   [EQUAL]: StringEqualityEvaluationGenerator,
-  [NOT_EQUAL]: NegativeStringEqualityEvaluationGenerator,
+  [NOT_EQUAL]: StringNegativeEqualityEvaluationGenerator,
   [CONTAINS]: StringContainsEvaluationGenerator
 }
 
 const NumericOperations: OperationMapping = {
   [EQUAL]: NumericEqualityEvaluationGenerator,
-  [NOT_EQUAL]: NegativeNumericEqualityEvaluationGenerator,
+  [NOT_EQUAL]: NumericNegativeEqualityEvaluationGenerator,
+  [GREATER_THAN]: NumericGTEvaluationGenerator,
+  [LESS_THAN]: NumericLTEvaluationGenerator,
   [GREATER_THAN_OR_EQUAL]: NumericGTEEvaluationGenerator,
   [LESS_THAN_OR_EQUAL]: NumericLTEEvaluationGenerator
 }
 
-export {
-  StringEqualityEvaluationGenerator,
-  NumericEqualityEvaluationGenerator,
-  StringOperations,
-  NumericOperations
-}
+export { StringOperations, NumericOperations }
 
 //export const DefaultFilterGenerator:FilterGenerator = StringOperations[EQUAL];

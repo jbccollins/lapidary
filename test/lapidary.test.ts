@@ -4,6 +4,7 @@ import { STRING } from '../src/constants'
 import { Item, Facets } from '../src/types'
 
 import { StringOperations, NumericOperations } from '../src/operations'
+import { traverseEvaluationTree, recursivelyGenerateEvaluators } from '../src/helpers'
 
 const WP_1ST = {
   name: 'War and Peace',
@@ -31,7 +32,7 @@ const HP_1ST = {
 }
 
 const ESCAPED = {
-  name: "It's spelled just like escape",
+  name: 'Its \\ spelled just like escape',
   edition: 1
 }
 
@@ -47,6 +48,7 @@ const facets: Facets = {
 }
 
 const context = {}
+
 describe('Instantiation', () => {
   it('Lapidary is instantiable', () => {
     expect(new Lapidary(items, facets, context)).toBeInstanceOf(Lapidary)
@@ -56,12 +58,8 @@ describe('Instantiation', () => {
       const results = parseQuery('', lapidary)
       expect(results).toEqual(items)
     })
-  // it('Handles escaped characters correctly', () => {
-  //   const lapidary = new Lapidary(items, facets, context)
-  //   const results = parseQuery(`name:=:"It's spelled just like escape"`, lapidary)
-  //   expect(results).toEqual([ESCAPED])
-  // })
 })
+
 describe('Generic Malformed Queries', () => {
   it('Fails given invalid facet key', () => {
     const lapidary = new Lapidary(items, facets, context)
@@ -72,8 +70,15 @@ describe('Generic Malformed Queries', () => {
       expect(() => parseQuery('name:DERPS:"War and Peace"', lapidary)).toThrow(
         `Invalid operation DERPS for name`
       )
+    }),
+    it('Fails given empty right hand side', () => {
+      const lapidary = new Lapidary(items, facets, context)
+      expect(() => parseQuery('name:=', lapidary)).toThrow(
+        `Expected a value for name. Received "undefined"`
+      )
     })
 })
+
 describe('String Queries', () => {
   it('Evaluates equality', () => {
     const lapidary = new Lapidary(items, facets, context)
@@ -84,6 +89,16 @@ describe('String Queries', () => {
       const lapidary = new Lapidary(items, facets, context)
       const results = parseQuery('name:!=:"Harry Potter and the Sorcerers Stone"', lapidary)
       expect(results).toEqual([WP_1ST, WP_2ND, MDT_1ST, MDT_2ND])
+    }),
+    it('Evaluates contains', () => {
+      const lapidary = new Lapidary(items, facets, context)
+      const results = parseQuery('name:contains:"Harry"', lapidary)
+      expect(results).toEqual([HP_1ST])
+    }),
+    it('Handles escaped characters', () => {
+      const lapidary = new Lapidary([ESCAPED], facets, context)
+      const results = parseQuery(`name:=:"Its \\ spelled just like escape"`, lapidary)
+      expect(results).toEqual([ESCAPED])
     })
 })
 
@@ -102,6 +117,27 @@ describe('Numeric Queries', () => {
     it('Evaluates negative equality', () => {
       const lapidary = new Lapidary(items, facets, context)
       const results = parseQuery('edition:!=:1', lapidary)
+      expect(results).toEqual([WP_2ND, MDT_2ND])
+    }),
+    // TODO the <= and >= are shitty tests rn.
+    it('Evaluates <=', () => {
+      const lapidary = new Lapidary(items, facets, context)
+      const results = parseQuery('edition:<=:2', lapidary)
+      expect(results).toEqual(items)
+    }),
+    it('Evaluates >=', () => {
+      const lapidary = new Lapidary(items, facets, context)
+      const results = parseQuery('edition:>=:1', lapidary)
+      expect(results).toEqual(items)
+    }),
+    it('Evaluates <', () => {
+      const lapidary = new Lapidary(items, facets, context)
+      const results = parseQuery('edition:<:2', lapidary)
+      expect(results).toEqual([WP_1ST, MDT_1ST, HP_1ST])
+    }),
+    it('Evaluates >', () => {
+      const lapidary = new Lapidary(items, facets, context)
+      const results = parseQuery('edition:>:1', lapidary)
       expect(results).toEqual([WP_2ND, MDT_2ND])
     })
 })
@@ -140,5 +176,16 @@ describe('Join Queries', () => {
         lapidary
       )
       expect(results).toEqual([MDT_2ND])
+    })
+})
+
+describe('Miscellaneous', () => {
+  it('Handles a null evaluation tree', () => {
+    const lapidary = new Lapidary(items, facets, context)
+    const r = traverseEvaluationTree(WP_1ST, null, lapidary)
+    expect(r).toBe(false)
+  }),
+    it('Fails on an empty split', () => {
+      expect(() => recursivelyGenerateEvaluators([], facets)).toThrow(`Invalid syntax`)
     })
 })
