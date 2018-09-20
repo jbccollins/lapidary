@@ -1,12 +1,9 @@
-import { FilterEvaluator, FilterGenerator, Facet, Item, Facets, OperationMapping } from './types'
+import { FilterEvaluator, FilterGenerator, Item, Facets, OperationMapping } from './types'
 
 import Lapidary from './lapidary'
 import {
   EQUAL,
   NOT_EQUAL,
-  COMPARISONS,
-  STRING,
-  NUMERIC,
   GREATER_THAN_OR_EQUAL,
   LESS_THAN_OR_EQUAL,
   LESS_THAN,
@@ -15,7 +12,7 @@ import {
 } from './constants'
 
 // String quotes when doing string operations
-const cleanString = (s: string, facetKey: string | number) => {
+const cleanString = (s: string | undefined, facetKey: string | number) => {
   if (typeof s === 'undefined') {
     throw new Error(`Expected a value for ${facetKey}. Received "undefined"`)
   }
@@ -127,5 +124,3 @@ const NumericOperations: OperationMapping = {
 }
 
 export { StringOperations, NumericOperations }
-
-//export const DefaultFilterGenerator:FilterGenerator = StringOperations[EQUAL];

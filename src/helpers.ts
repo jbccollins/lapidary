@@ -7,7 +7,7 @@ import {
   Item
 } from './types'
 import Lapidary from './lapidary'
-import { AND, OR, COMPARISONS } from './constants'
+import { AND, OR } from './constants'
 // https://gist.github.com/scottrippey/1349099
 const splitBalanced = (
   input: string,
@@ -35,13 +35,13 @@ const splitBalanced = (
       // Escape
       buffer.push($1, $s || $o || $c || $t)
       return $0 // Does nothing. Just satisfies Typescript's insatiable thirst for a string return;
-    } else if ($o)
+    } else if ($o) {
       // Open
       stack.push($o)
-    else if ($c)
+    } else if ($c) {
       // Close
       stack.pop()
-    else if ($t) {
+    } else if ($t) {
       // Toggle
       if (stack[stack.length - 1] !== $t) stack.push($t)
       else stack.pop()
@@ -59,8 +59,6 @@ const splitBalanced = (
   })
   return results
 }
-
-const DELIMITER = ' '
 
 // Idk how to Type the return value for recursive functions
 // This should ultimately return String[][]
@@ -108,9 +106,9 @@ export const traverseEvaluationTree = (
   }
   // TODO: I have no idea how to do typechecking on union types. Maybe refactor the EvaluationTree and EvaluationTreeLeaf to be the same type.
   if (evalutionTree.hasOwnProperty('filterEvaluator')) {
-    return (<EvaluationTreeLeaf>evalutionTree).filterEvaluator(item, l)
+    return (evalutionTree as EvaluationTreeLeaf).filterEvaluator(item, l)
   }
-  const tree = <EvaluationTree>evalutionTree
+  const tree = evalutionTree as EvaluationTree
   // TODO: This is kinda messy.... And I'm not even sure the last case is necessary
   if (tree.left && tree.right) {
     if (tree.joinType === AND) {
@@ -131,7 +129,7 @@ export const recursivelyGenerateEvaluators = (
     if (split.length < 1) {
       throw new Error('Invalid syntax')
     }
-    //Case like (foo:=:bar) which will become ["foo:=bar"]
+    // Case like (foo:=:bar) which will become ["foo:=bar"]
     if (split.length === 1) {
       return {
         left: recursivelyGenerateEvaluators(split[0], facets),

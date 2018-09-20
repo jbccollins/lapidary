@@ -18,10 +18,7 @@ export type EvaluationTreeLeaf = {
   filterEvaluator: FilterEvaluator
 }
 
-export type Item = {
-  [k in keyof Facets]: any
-  //[k: string]: string
-}
+export type Item = { [k in keyof Facets]: any }
 
 /*** END TYPES ***/
 
