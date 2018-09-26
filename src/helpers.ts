@@ -8,6 +8,8 @@ import {
 } from './types'
 import Lapidary from './lapidary'
 import { AND, OR } from './constants'
+import partition from 'lodash.partition'
+import { DefaultEvaluationGenerator } from './operations'
 // https://gist.github.com/scottrippey/1349099
 const splitBalanced = (
   input: string,
@@ -84,9 +86,19 @@ const predicateToFilterEvaluator = (predicate: string, facets: Facets): FilterEv
   const facetKey = key as keyof Facets
   if (expression && facetKey) {
     if (!facets[facetKey]) {
-      throw new Error(`Invalid facet key: ${facetKey}`)
+      throw new Error(`Invalid facet key: "${facetKey}". Unable to interpret "${predicate}"`)
     }
   }
+
+  // Handle raw queries that don't match lapidary syntax
+  if (!isInterpretable(predicate)) {
+    return DefaultEvaluationGenerator(facetKey, expression)
+  }
+
+  if (!facets[facetKey]) {
+    throw new Error(`Invalid facet ${facetKey}. Unable to interpret "${predicate}"`)
+  }
+
   const filterGenerator: FilterGenerator = facets[facetKey].operations[operation]
 
   if (!filterGenerator) {
@@ -158,11 +170,30 @@ export const recursivelyGenerateEvaluators = (
   }
 }
 
+const EXPRESSION_REGEX = /\w+:\w*:\w+/gi
+
+const isInterpretable = (str: string) => {
+  if (str.startsWith('(') && str.endsWith(')')) {
+    return true
+  }
+  if (str === AND || str === OR) {
+    return true
+  }
+  if (str.match(EXPRESSION_REGEX)) {
+    return true
+  }
+  return false
+}
+
 const generateEvaluationTree = (
   input: string,
   facets: Facets
 ): EvaluationTree | EvaluationTreeLeaf => {
-  const split: String[] = recursivelySplitString(input, 0)
+  // Replace instances of multiple spaces with a single space
+  const squashedInput = input.replace(/\s\s+/g, ' ')
+  const initialSplit = splitBalanced(squashedInput)
+  console.log(partition(initialSplit, i => isInterpretable(i)))
+  const split: String[] = recursivelySplitString(squashedInput, 0)
   const evaluationTree = recursivelyGenerateEvaluators(split, facets)
   return evaluationTree
 }

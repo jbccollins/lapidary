@@ -108,6 +108,15 @@ const NumericGTEEvaluationGenerator: FilterGenerator = (
   }
 }
 
+const DefaultEvaluationGenerator: FilterGenerator = (
+  facetKey: keyof Facets,
+  expression: string
+): FilterEvaluator => {
+  return (item: Item, l: Lapidary) => {
+    return l.defaultFacet(item).indexOf(expression) >= 0
+  }
+}
+
 const StringOperations: OperationMapping = {
   [EQUAL]: StringEqualityEvaluationGenerator,
   [NOT_EQUAL]: StringNegativeEqualityEvaluationGenerator,
@@ -123,4 +132,4 @@ const NumericOperations: OperationMapping = {
   [LESS_THAN_OR_EQUAL]: NumericLTEEvaluationGenerator
 }
 
-export { StringOperations, NumericOperations }
+export { StringOperations, NumericOperations, DefaultEvaluationGenerator }
