@@ -13,8 +13,8 @@ import {
 
 // String quotes when doing string operations
 const cleanString = (s: string | undefined, facetKey: string | number) => {
-  if (typeof s === 'undefined') {
-    throw new Error(`Expected a value for ${facetKey}. Received "undefined"`)
+  if (typeof s === 'undefined' || s === '') {
+    throw new Error(`Expected a value for ${facetKey}`)
   }
   return s.replace(/['"]+/g, '')
 }
@@ -113,7 +113,7 @@ const DefaultEvaluationGenerator: FilterGenerator = (
   expression: string
 ): FilterEvaluator => {
   return (item: Item, l: Lapidary) => {
-    return l.defaultFacet(item).indexOf(expression) >= 0
+    return l.defaultFacet(item).indexOf(String(facetKey)) >= 0
   }
 }
 

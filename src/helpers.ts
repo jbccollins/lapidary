@@ -8,7 +8,6 @@ import {
 } from './types'
 import Lapidary from './lapidary'
 import { AND, OR } from './constants'
-import partition from 'lodash.partition'
 import { DefaultEvaluationGenerator } from './operations'
 // https://gist.github.com/scottrippey/1349099
 const splitBalanced = (
@@ -81,18 +80,18 @@ const recursivelySplitString = (input: string, depth: number): any => {
 }
 
 const predicateToFilterEvaluator = (predicate: string, facets: Facets): FilterEvaluator => {
-  // \w+:\w*:\w+ Should be the regex I need I think...
   const [key, operation, expression] = predicate.split(':')
   const facetKey = key as keyof Facets
-  if (expression && facetKey) {
-    if (!facets[facetKey]) {
-      throw new Error(`Invalid facet key: "${facetKey}". Unable to interpret "${predicate}"`)
-    }
-  }
 
   // Handle raw queries that don't match lapidary syntax
   if (!isInterpretable(predicate)) {
     return DefaultEvaluationGenerator(facetKey, expression)
+  }
+
+  if (expression && facetKey) {
+    if (!facets[facetKey]) {
+      throw new Error(`Invalid facet key: "${facetKey}". Unable to interpret "${predicate}"`)
+    }
   }
 
   if (!facets[facetKey]) {
@@ -170,7 +169,8 @@ export const recursivelyGenerateEvaluators = (
   }
 }
 
-const EXPRESSION_REGEX = /\w+:\w*:\w+/gi
+const EXPRESSION_REGEX = /.+:.*:/gi
+//const EXPRESSION_REGEX = /.+:.*:.+/gi
 
 const isInterpretable = (str: string) => {
   if (str.startsWith('(') && str.endsWith(')')) {
@@ -191,8 +191,6 @@ const generateEvaluationTree = (
 ): EvaluationTree | EvaluationTreeLeaf => {
   // Replace instances of multiple spaces with a single space
   const squashedInput = input.replace(/\s\s+/g, ' ')
-  const initialSplit = splitBalanced(squashedInput)
-  console.log(partition(initialSplit, i => isInterpretable(i)))
   const split: String[] = recursivelySplitString(squashedInput, 0)
   const evaluationTree = recursivelyGenerateEvaluators(split, facets)
   return evaluationTree

@@ -15,9 +15,10 @@ export default class Lapidary {
   items: Item[]
   facets: Facets
   context: {}
-  defaultFacet: (i: Item) => ''
+  parseQuery: (query: string, l: Lapidary) => Item[]
+  defaultFacet: (i: Item) => string
 
-  constructor(items: Item[], facets: Facets, context: {}, defaultFacet: (i: Item) => '') {
+  constructor(items: Item[], facets: Facets, context: {}, defaultFacet: (i: Item) => string) {
     this.items = items
     this.facets = facets
     this.context = context
