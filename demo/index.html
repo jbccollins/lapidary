@@ -30,6 +30,11 @@
 			  	name: 'Herp a derp',
 			  	edition: 1,
 			  	pagecount: 320
+			  },
+			  {
+			  	name: 'Herp a derp',
+			  	edition: 2,
+			  	pagecount: 320
 			  }
 			];
 			var facets = {
@@ -41,19 +46,35 @@
 			  },
 			  pagecount: {
 			  	operations: lapidary.NumericOperations
+			  },
+			  is: {
+			  	operations: lapidary.AbstractOperations
 			  }
 			};
-			var l = new lapidary.Lapidary(items, facets, {});
+			var defaultFacet = function(i, v) {
+				return i.name.toLowerCase().indexOf(String(v).toLowerCase()) > -1
+			}
+			var l = new lapidary.Lapidary(items, facets, {}, defaultFacet);
+			console.log(l);
 			var handleInputChange = function() {
 				var query = document.getElementById("lapidary-input").value;
 				//console.log(query);
-				var results = lapidary.parseQuery(query, l);
+				var results = l.parseQuery(query);
 				//var resultsArr = JSON.stringify(results);
 				var outputDiv = document.getElementById("output");
 				outputDiv.innerHTML = "";
 				for (r of results) {
 					var e = document.createElement('div');
-					e.innerHTML = JSON.stringify(r);
+					var name = document.createElement('div');
+					name.innerHTML = "Name: " + r.name;
+					e.appendChild(name);
+					var edition = document.createElement('div');
+					edition.innerHTML = "Edition: " + r.edition;
+					e.appendChild(edition);
+					var pagecount = document.createElement('div');
+					pagecount.innerHTML = "Page Count: " + r.pagecount;
+					e.appendChild(pagecount);
+
 					outputDiv.appendChild(e);
 				}
 

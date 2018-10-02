@@ -8,7 +8,8 @@ import {
   LESS_THAN_OR_EQUAL,
   LESS_THAN,
   GREATER_THAN,
-  CONTAINS
+  CONTAINS,
+  ABSTRACT
 } from './constants'
 
 // String quotes when doing string operations
@@ -112,8 +113,16 @@ const DefaultEvaluationGenerator: FilterGenerator = (
   facetKey: keyof Facets,
   expression: string
 ): FilterEvaluator => {
+  return (item: Item, l: Lapidary) => l.defaultFacet(item, facetKey)
+}
+
+const AbstractEvaluationGenerator: FilterGenerator = (
+  facetKey: keyof Facets,
+  expression: string
+): FilterEvaluator => {
   return (item: Item, l: Lapidary) => {
-    return l.defaultFacet(item).indexOf(String(facetKey)) >= 0
+    console.log(facetKey, expression)
+    return true
   }
 }
 
@@ -132,4 +141,8 @@ const NumericOperations: OperationMapping = {
   [LESS_THAN_OR_EQUAL]: NumericLTEEvaluationGenerator
 }
 
-export { StringOperations, NumericOperations, DefaultEvaluationGenerator }
+const AbstractOperations: OperationMapping = {
+  [ABSTRACT]: AbstractEvaluationGenerator
+}
+
+export { StringOperations, NumericOperations, AbstractOperations, DefaultEvaluationGenerator }
