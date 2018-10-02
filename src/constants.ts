@@ -9,6 +9,8 @@ const CONTAINS = 'contains'
 const STRING = 'string'
 const NUMERIC = 'numeric'
 
+const ABSTRACT = ''
+
 const COMPARISONS = [
   NOT_EQUAL,
   LESS_THAN,
@@ -37,5 +39,6 @@ export {
   OR,
   NOT_EQUAL,
   JOINS,
-  CONTAINS
+  CONTAINS,
+  ABSTRACT
 }

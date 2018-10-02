@@ -1,5 +1,5 @@
 input {
-	width: 400px;
+	width: 600px;
 	padding: 4px;
 	margin-left: auto;
 	margin-right: auto;
@@ -8,6 +8,7 @@ input {
 	height: 40px;
 	font-size: 30px;
 	line-height: 40px;
+	border-radius: 4px;
 }
 #output {
 	width: 850px;
@@ -15,4 +16,22 @@ input {
 	margin-left: auto;
 	margin-right: auto;
 	font-size: 24px;
+	display: flex;
+	flex-wrap: wrap;
+	margin-top: 16px;
+}
+
+#output > div {
+	display: inline-block;
+	border-radius: 4px;
+	background: #202020;
+	white-space:nowrap;
+	margin: 8px;
+	padding: 8px;
+	color: lightgray;
+	font-size: 16px;
+	font-weight: normal;;
+}
+body {
+	background: #2b2b2b;
 }

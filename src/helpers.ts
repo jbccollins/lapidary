@@ -9,6 +9,23 @@ import {
 import Lapidary from './lapidary'
 import { AND, OR } from './constants'
 import { DefaultEvaluationGenerator } from './operations'
+
+const EXPRESSION_REGEX = /.+:.*:/gi
+// const EXPRESSION_REGEX = /.+:.*:.+/gi
+
+const isInterpretable = (str: string) => {
+  if (str.startsWith('(') && str.endsWith(')')) {
+    return true
+  }
+  if (str === AND || str === OR) {
+    return true
+  }
+  if (str.match(EXPRESSION_REGEX)) {
+    return true
+  }
+  return false
+}
+
 // https://gist.github.com/scottrippey/1349099
 const splitBalanced = (
   input: string,
@@ -167,22 +184,6 @@ export const recursivelyGenerateEvaluators = (
   return {
     filterEvaluator: predicateToFilterEvaluator(split, facets)
   }
-}
-
-const EXPRESSION_REGEX = /.+:.*:/gi
-//const EXPRESSION_REGEX = /.+:.*:.+/gi
-
-const isInterpretable = (str: string) => {
-  if (str.startsWith('(') && str.endsWith(')')) {
-    return true
-  }
-  if (str === AND || str === OR) {
-    return true
-  }
-  if (str.match(EXPRESSION_REGEX)) {
-    return true
-  }
-  return false
 }
 
 const generateEvaluationTree = (
