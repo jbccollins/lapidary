@@ -10,9 +10,9 @@ export default class Lapidary {
   setTransientContext: (c: object) => void
   parseQuery: (query: string) => Item[]
   defaultFacet: (i: Item, s: string | number) => boolean
+  public getCurrentIndex: () => number
   private currentIndex: number
   private setCurrentIndex: (i: number) => void
-  public getCurrentIndex: () => number
 
   constructor(
     items: Item[],

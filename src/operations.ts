@@ -144,7 +144,7 @@ const ExistentialComparator: AbstractComparator = (expression: string, item: Ite
     case 'duplicate':
       return isDuplicate(expression, item, l)
     default:
-      throw `Invalid expression "${expression}" given to ExistentialComparator "is"`
+      throw new Error(`Invalid expression "${expression}" given to ExistentialComparator "is"`)
   }
 }
 
@@ -157,7 +157,7 @@ const AbstractEvaluationGenerator: FilterGenerator = (
       case 'is':
         return ExistentialComparator(expression, item, l)
       default:
-        throw 'Unknown usage of AbstractEvaluationGenerator'
+        throw new Error('Unknown usage of AbstractEvaluationGenerator')
     }
   }
 }
