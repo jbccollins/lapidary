@@ -8,6 +8,7 @@ export type Facets = {
 export type Facet = {
   operations: OperationMapping
 }
+
 export type EvaluationTree = {
   left: EvaluationTree | EvaluationTreeLeaf | null
   right: EvaluationTree | EvaluationTreeLeaf | null
@@ -19,6 +20,8 @@ export type EvaluationTreeLeaf = {
 }
 
 export type Item = { [k in keyof Facets]: any }
+
+export type AbstractComparator = (expression: string, item: Item, l: Lapidary) => boolean
 
 /*** END TYPES ***/
 

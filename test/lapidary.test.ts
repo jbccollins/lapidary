@@ -3,7 +3,7 @@ import { STRING } from '../src/constants'
 
 import { Item, Facets } from '../src/types'
 
-import { StringOperations, NumericOperations } from '../src/operations'
+import { StringOperations, NumericOperations, AbstractOperations } from '../src/operations'
 import { traverseEvaluationTree, recursivelyGenerateEvaluators } from '../src/helpers'
 
 const WP_1ST = {
@@ -44,6 +44,9 @@ const facets: Facets = {
   },
   edition: {
     operations: NumericOperations
+  },
+  is: {
+    operations: AbstractOperations
   }
 }
 
@@ -179,6 +182,28 @@ describe('Join Queries', () => {
     })
 })
 
+describe('Raw Queries', () => {
+  it('Handles raw queries', () => {
+    const lapidary = new Lapidary(items, facets, context, defaultFacet)
+    const results = lapidary.parseQuery(`Harry Potter`)
+    expect(results).toEqual([HP_1ST])
+  })
+})
+
+describe('Abstract Queries', () => {
+  it('Handles duplicate', () => {
+    const lapidary = new Lapidary([WP_1ST, HP_1ST, WP_1ST], facets, context, defaultFacet)
+    const results = lapidary.parseQuery(`is::duplicate`)
+    expect(results).toEqual([WP_1ST, WP_1ST])
+  }),
+    it('Fails given invalid existential usage', () => {
+      const lapidary = new Lapidary(items, facets, context, defaultFacet)
+      expect(() => lapidary.parseQuery(`is::derp`)).toThrow(
+        `Invalid expression "derp" given to ExistentialComparator "is"`
+      )
+    })
+})
+
 describe('Miscellaneous', () => {
   it('Handles a null evaluation tree', () => {
     const lapidary = new Lapidary(items, facets, context, defaultFacet)
@@ -193,12 +218,4 @@ describe('Miscellaneous', () => {
     it('Fails on an empty split', () => {
       expect(() => recursivelyGenerateEvaluators([], facets)).toThrow(`Invalid syntax`)
     })
-})
-
-describe('Raw Queries', () => {
-  it('Handles raw queries', () => {
-    const lapidary = new Lapidary(items, facets, context, defaultFacet)
-    const results = lapidary.parseQuery(`Harry Potter`)
-    expect(results).toEqual([HP_1ST])
-  })
 })
