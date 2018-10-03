@@ -1,4 +1,11 @@
-import { FilterEvaluator, FilterGenerator, Item, Facets, OperationMapping } from './types'
+import {
+  FilterEvaluator,
+  FilterGenerator,
+  Item,
+  Facets,
+  OperationMapping,
+  AbstractComparator
+} from './types'
 
 import Lapidary from './lapidary'
 import {
@@ -116,13 +123,42 @@ const DefaultEvaluationGenerator: FilterGenerator = (
   return (item: Item, l: Lapidary) => l.defaultFacet(item, facetKey)
 }
 
+// TODO: Extract this to utility or something
+const isDuplicate = (expression: string, item: Item, l: Lapidary) => {
+  let count = 0
+  for (let i in l.items) {
+    if (l.items[i].name === item.name) {
+      count++
+    }
+    if (count > 1) {
+      return true
+    }
+  }
+  return false
+}
+
+// handle "is"
+// TODO: This is super inefficient. Use transientContext and currentIndex to store know duplicates and search the remainder of possible duplicates
+const ExistentialComparator: AbstractComparator = (expression: string, item: Item, l: Lapidary) => {
+  switch (expression) {
+    case 'duplicate':
+      return isDuplicate(expression, item, l)
+    default:
+      throw new Error(`Invalid expression "${expression}" given to ExistentialComparator "is"`)
+  }
+}
+
 const AbstractEvaluationGenerator: FilterGenerator = (
   facetKey: keyof Facets,
   expression: string
 ): FilterEvaluator => {
   return (item: Item, l: Lapidary) => {
-    console.log(facetKey, expression)
-    return true
+    switch (facetKey) {
+      case 'is':
+        return ExistentialComparator(expression, item, l)
+      default:
+        throw new Error('Unknown usage of AbstractEvaluationGenerator')
+    }
   }
 }
 
