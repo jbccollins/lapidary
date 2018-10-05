@@ -61,14 +61,16 @@
     ],
     "coveragePathIgnorePatterns": [
       "/node_modules/",
-      "/test/"
+      "/test/",
+      "/demo/",
+      "utilities.ts"
     ],
     "coverageThreshold": {
       "global": {
-        "branches": 10,
-        "functions": 15,
-        "lines": 15,
-        "statements": 15
+        "branches": 100,
+        "functions": 100,
+        "lines": 100,
+        "statements": 100
       }
     },
     "collectCoverage": true
@@ -93,7 +95,7 @@
     "cross-env": "^5.0.1",
     "cz-conventional-changelog": "^2.0.0",
     "husky": "^0.14.0",
-    "jest": "^22.4.4",
+    "jest": "23.6.0",
     "lint-staged": "^7.1.3",
     "lodash.camelcase": "^4.3.0",
     "prettier": "^1.13.4",
@@ -107,7 +109,7 @@
     "rollup-plugin-sourcemaps": "^0.4.2",
     "rollup-plugin-typescript2": "^0.13.0",
     "semantic-release": "^15.0.0",
-    "ts-jest": "^22.4.6",
+    "ts-jest": "23.10.3",
     "ts-node": "^6.0.0",
     "tslint": "^5.8.0",
     "tslint-config-prettier": "^1.1.0",

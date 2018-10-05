@@ -1,10 +1,55 @@
 import Lapidary from '../src/lapidary'
-import { STRING } from '../src/constants'
+import { STRING, IS, IMPLICIT } from '../src/constants'
 
-import { Item, Facets } from '../src/types'
+import { Item, Facets, ImplicitComparator, FilterEvaluator, FilterGenerator } from '../src/types'
 
-import { StringOperations, NumericOperations, AbstractOperations } from '../src/operations'
+import { StringOperations, NumericOperations } from '../src/operations'
 import { traverseEvaluationTree, recursivelyGenerateEvaluators } from '../src/helpers'
+const DUPLICATE = 'duplicate'
+
+// TODO: Extract this to utility or something
+const isDuplicate = (expression: string, item: Item, l: Lapidary) => {
+  const index = l.getCurrentIndex()
+  if (index === 0) {
+    l.setInTransientContext([DUPLICATE], {})
+  } else if (l.getInTransientContext([DUPLICATE, item.name])) {
+    return true
+  }
+  let count = 0
+  for (let i in l.items) {
+    if (l.items[i].name === item.name) {
+      count++
+    }
+    if (count > 1) {
+      l.setInTransientContext([DUPLICATE, item.name], true)
+      return true
+    }
+  }
+  return false
+}
+
+const ExistentialComparator: ImplicitComparator = (expression: string, item: Item, l: Lapidary) => {
+  switch (expression) {
+    case DUPLICATE:
+      return isDuplicate(expression, item, l)
+    default:
+      throw new Error(`Invalid expression "${expression}" given to ExistentialComparator "is"`)
+  }
+}
+
+const ImplicitEvaluationGenerator: FilterGenerator = (
+  facetKey: keyof Facets,
+  expression: string
+): FilterEvaluator => {
+  return (item: Item, l: Lapidary) => {
+    switch (facetKey) {
+      case IS:
+        return ExistentialComparator(expression, item, l)
+      default:
+        throw new Error('Unknown usage of AbstractEvaluationGenerator')
+    }
+  }
+}
 
 const WP_1ST = {
   name: 'War and Peace',
@@ -46,7 +91,9 @@ const facets: Facets = {
     operations: NumericOperations
   },
   is: {
-    operations: AbstractOperations
+    operations: {
+      [IMPLICIT]: ImplicitEvaluationGenerator
+    }
   }
 }
 
@@ -63,6 +110,11 @@ describe('Instantiation', () => {
       const results = lapidary.parseQuery('')
       expect(results).toEqual(items)
     })
+  it('Returns 0 for currentIndex', () => {
+    const lapidary = new Lapidary(items, facets, context, defaultFacet)
+    const index = lapidary.getCurrentIndex()
+    expect(index).toEqual(0)
+  })
 })
 
 describe('Generic Malformed Queries', () => {
@@ -144,6 +196,16 @@ describe('Numeric Queries', () => {
     it('Evaluates >', () => {
       const lapidary = new Lapidary(items, facets, context, defaultFacet)
       const results = lapidary.parseQuery('edition:>:1')
+      expect(results).toEqual([WP_2ND, MDT_2ND])
+    }),
+    it('Evaluates between', () => {
+      const lapidary = new Lapidary(items, facets, context, defaultFacet)
+      const results = lapidary.parseQuery('edition:between:1,100')
+      expect(results).toEqual([WP_2ND, MDT_2ND])
+    }),
+    it('Evaluates inbetween', () => {
+      const lapidary = new Lapidary(items, facets, context, defaultFacet)
+      const results = lapidary.parseQuery('edition:inbetween:2,100')
       expect(results).toEqual([WP_2ND, MDT_2ND])
     })
 })

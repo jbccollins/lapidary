@@ -1,16 +1,19 @@
-import { StringOperations, NumericOperations, AbstractOperations } from './operations'
+import { StringOperations, NumericOperations } from './operations'
 import { EvaluationTree, EvaluationTreeLeaf, Item, Facets } from './types'
 import { generateEvaluationTree, traverseEvaluationTree } from './helpers'
+import { setIn, getIn } from './utilities'
 
 export default class Lapidary {
   items: Item[]
   facets: Facets
-  context: {}
-  transientContext: object
-  setTransientContext: (c: object) => void
+  context: { [key: string]: any }
+  transientContext: { [key: string]: any }
+  setInTransientContext: (keyPath: string[], value: any) => void
+  getInTransientContext: (keyPath: string[]) => any
   parseQuery: (query: string) => Item[]
   defaultFacet: (i: Item, s: string | number) => boolean
-  public getCurrentIndex: () => number
+  getCurrentIndex: () => number
+  private clearTransientContext: () => void
   private currentIndex: number
   private setCurrentIndex: (i: number) => void
 
@@ -28,8 +31,13 @@ export default class Lapidary {
     this.currentIndex = 0
     this.setCurrentIndex = (i: number) => (this.currentIndex = i)
     this.getCurrentIndex = () => this.currentIndex
-    this.setTransientContext = (newContext: object) => (this.transientContext = newContext)
+    this.clearTransientContext = () => (this.transientContext = {})
+    this.setInTransientContext = (keyPath: string[], value: any) =>
+      setIn(this.transientContext, keyPath, value)
+    this.getInTransientContext = (keyPath: string[]) => getIn(this.transientContext, keyPath)
     this.parseQuery = (query: string): Item[] => {
+      // Reset transient context before each run
+      this.clearTransientContext()
       if (query.trim() === '') {
         return this.items
       }
@@ -41,11 +49,9 @@ export default class Lapidary {
         this.setCurrentIndex(index)
         return traverseEvaluationTree(item, evalutionTree, this)
       })
-      // Reset transient context after each run
-      this.setTransientContext({})
       return result
     }
   }
 }
 
-export { StringOperations, NumericOperations, AbstractOperations, Lapidary }
+export { StringOperations, NumericOperations, Lapidary }
