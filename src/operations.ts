@@ -1,11 +1,4 @@
-import {
-  FilterEvaluator,
-  FilterGenerator,
-  Item,
-  Facets,
-  OperationMapping,
-  AbstractComparator
-} from './types'
+import { FilterEvaluator, FilterGenerator, Item, Facets, OperationMapping } from './types'
 
 import Lapidary from './lapidary'
 import {
@@ -16,7 +9,8 @@ import {
   LESS_THAN,
   GREATER_THAN,
   CONTAINS,
-  ABSTRACT
+  BETWEEN,
+  INCLUSIVE_BETWEEN
 } from './constants'
 
 // String quotes when doing string operations
@@ -116,50 +110,36 @@ const NumericGTEEvaluationGenerator: FilterGenerator = (
   }
 }
 
+const NumericBetweenEvaluationGenerator: FilterGenerator = (
+  facetKey: keyof Facets,
+  expression: string
+): FilterEvaluator => {
+  return (item: Item, l: Lapidary) => {
+    const [lower, upper] = expression.split(',')
+    return (
+      item[facetKey] > cleanNumber(lower, facetKey) && item[facetKey] < cleanNumber(upper, facetKey)
+    )
+  }
+}
+
+const NumericInclusiveBetweenEvaluationGenerator: FilterGenerator = (
+  facetKey: keyof Facets,
+  expression: string
+): FilterEvaluator => {
+  return (item: Item, l: Lapidary) => {
+    const [lower, upper] = expression.split(',')
+    return (
+      item[facetKey] >= cleanNumber(lower, facetKey) &&
+      item[facetKey] <= cleanNumber(upper, facetKey)
+    )
+  }
+}
+
 const DefaultEvaluationGenerator: FilterGenerator = (
   facetKey: keyof Facets,
   expression: string
 ): FilterEvaluator => {
   return (item: Item, l: Lapidary) => l.defaultFacet(item, facetKey)
-}
-
-// TODO: Extract this to utility or something
-const isDuplicate = (expression: string, item: Item, l: Lapidary) => {
-  let count = 0
-  for (let i in l.items) {
-    if (l.items[i].name === item.name) {
-      count++
-    }
-    if (count > 1) {
-      return true
-    }
-  }
-  return false
-}
-
-// handle "is"
-// TODO: This is super inefficient. Use transientContext and currentIndex to store know duplicates and search the remainder of possible duplicates
-const ExistentialComparator: AbstractComparator = (expression: string, item: Item, l: Lapidary) => {
-  switch (expression) {
-    case 'duplicate':
-      return isDuplicate(expression, item, l)
-    default:
-      throw new Error(`Invalid expression "${expression}" given to ExistentialComparator "is"`)
-  }
-}
-
-const AbstractEvaluationGenerator: FilterGenerator = (
-  facetKey: keyof Facets,
-  expression: string
-): FilterEvaluator => {
-  return (item: Item, l: Lapidary) => {
-    switch (facetKey) {
-      case 'is':
-        return ExistentialComparator(expression, item, l)
-      default:
-        throw new Error('Unknown usage of AbstractEvaluationGenerator')
-    }
-  }
 }
 
 const StringOperations: OperationMapping = {
@@ -174,11 +154,9 @@ const NumericOperations: OperationMapping = {
   [GREATER_THAN]: NumericGTEvaluationGenerator,
   [LESS_THAN]: NumericLTEvaluationGenerator,
   [GREATER_THAN_OR_EQUAL]: NumericGTEEvaluationGenerator,
-  [LESS_THAN_OR_EQUAL]: NumericLTEEvaluationGenerator
+  [LESS_THAN_OR_EQUAL]: NumericLTEEvaluationGenerator,
+  [BETWEEN]: NumericBetweenEvaluationGenerator,
+  [INCLUSIVE_BETWEEN]: NumericInclusiveBetweenEvaluationGenerator
 }
 
-const AbstractOperations: OperationMapping = {
-  [ABSTRACT]: AbstractEvaluationGenerator
-}
-
-export { StringOperations, NumericOperations, AbstractOperations, DefaultEvaluationGenerator }
+export { StringOperations, NumericOperations, DefaultEvaluationGenerator }

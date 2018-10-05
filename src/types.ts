@@ -21,7 +21,7 @@ export type EvaluationTreeLeaf = {
 
 export type Item = { [k in keyof Facets]: any }
 
-export type AbstractComparator = (expression: string, item: Item, l: Lapidary) => boolean
+export type ImplicitComparator = (expression: string, item: Item, l: Lapidary) => boolean
 
 /*** END TYPES ***/
 

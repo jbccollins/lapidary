@@ -8,8 +8,11 @@ const CONTAINS = 'contains'
 
 const STRING = 'string'
 const NUMERIC = 'numeric'
+const BETWEEN = 'between'
+const INCLUSIVE_BETWEEN = 'inbetween'
+const IS = 'is'
 
-const ABSTRACT = ''
+const IMPLICIT = ''
 
 const COMPARISONS = [
   NOT_EQUAL,
@@ -40,5 +43,8 @@ export {
   NOT_EQUAL,
   JOINS,
   CONTAINS,
-  ABSTRACT
+  BETWEEN,
+  INCLUSIVE_BETWEEN,
+  IS,
+  IMPLICIT
 }

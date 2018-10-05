@@ -8,74 +8,25 @@ import {
 } from './types'
 import Lapidary from './lapidary'
 import { AND, OR } from './constants'
+import { splitBalanced } from './utilities'
 import { DefaultEvaluationGenerator } from './operations'
 
 const EXPRESSION_REGEX = /.+:.*:/gi
 // const EXPRESSION_REGEX = /.+:.*:.+/gi
 
 const isInterpretable = (str: string) => {
+  /* Currently unused because of recursivelySplitString
   if (str.startsWith('(') && str.endsWith(')')) {
     return true
   }
   if (str === AND || str === OR) {
     return true
   }
+  */
   if (str.match(EXPRESSION_REGEX)) {
     return true
   }
   return false
-}
-
-// https://gist.github.com/scottrippey/1349099
-const splitBalanced = (
-  input: string,
-  split: string = ' ',
-  open: string = '',
-  close: string = '',
-  toggle: string = '',
-  escape: string = ''
-): string[] => {
-  // Build the pattern from params with defaults:
-  const pattern = '([\\s\\S]*?)(e)?(?:(o)|(c)|(t)|(sp)|$)'
-    .replace('sp', split)
-    .replace('o', open || '[\\(\\{\\[]')
-    .replace('c', close || '[\\)\\}\\]]')
-    .replace('t', toggle || '[\'"]')
-    .replace('e', escape || '[\\\\]')
-  const r = new RegExp(pattern, 'gi')
-  const stack: string[] = []
-  let buffer: string[] = []
-  const results: string[] = []
-  // Clone the input string
-  const clonedInput = '' + input
-  clonedInput.replace(r, ($0, $1, $e, $o, $c, $t, $s, i) => {
-    if ($e) {
-      // Escape
-      buffer.push($1, $s || $o || $c || $t)
-      return $0 // Does nothing. Just satisfies Typescript's insatiable thirst for a string return;
-    } else if ($o) {
-      // Open
-      stack.push($o)
-    } else if ($c) {
-      // Close
-      stack.pop()
-    } else if ($t) {
-      // Toggle
-      if (stack[stack.length - 1] !== $t) stack.push($t)
-      else stack.pop()
-    } else {
-      // Split (if no stack) or EOF
-      if ($s ? !stack.length : !$1) {
-        buffer.push($1)
-        results.push(buffer.join(''))
-        buffer = []
-        return $0 // Does nothing. Just satisfies Typescript's insatiable thirst for a string return;
-      }
-    }
-    buffer.push($0)
-    return $0 // Does nothing. Just satisfies Typescript's insatiable thirst for a string return;
-  })
-  return results
 }
 
 // Idk how to Type the return value for recursive functions
@@ -111,9 +62,11 @@ const predicateToFilterEvaluator = (predicate: string, facets: Facets): FilterEv
     }
   }
 
+  /*// If the regex is ever switched back to /.+:.*:.+/gi this will probably need to be re-enabled
   if (!facets[facetKey]) {
     throw new Error(`Invalid facet ${facetKey}. Unable to interpret "${predicate}"`)
   }
+  */
 
   const filterGenerator: FilterGenerator = facets[facetKey].operations[operation]
 
@@ -191,7 +144,7 @@ const generateEvaluationTree = (
   facets: Facets
 ): EvaluationTree | EvaluationTreeLeaf => {
   // Replace instances of multiple spaces with a single space
-  const squashedInput = input.replace(/\s\s+/g, ' ')
+  const squashedInput = input.replace(/\s\s+/g, ' ').trim()
   const split: String[] = recursivelySplitString(squashedInput, 0)
   const evaluationTree = recursivelyGenerateEvaluators(split, facets)
   return evaluationTree

@@ -1,10 +1,13 @@
 <html>
 	<head>
 		<script type='text/javascript' src='../dist/lapidary.iife.js'></script>
+		<script type='text/javascript' src='people.js'></script>
 		<link rel="stylesheet" href="./style.css" media="screen" />
 	</head>
 	<body>
 		<script>
+			var items = window.people;
+			/*
 			var items = [
 			  {
 			    name: 'War and Peace',
@@ -37,44 +40,60 @@
 			  	pagecount: 320
 			  }
 			];
+			*/
+			function updateCount(i) {
+				var countDiv = document.getElementById("count");
+				countDiv.innerHTML = "Showing " + i.length + " of " + items.length;
+			}
 			var facets = {
-			  name: {
+			  firstName: {
 			    operations: lapidary.StringOperations
 			  },
-			  edition: {
+			  lastName: {
+			    operations: lapidary.StringOperations
+			  },
+			  balance: {
 			  	operations: lapidary.NumericOperations
 			  },
-			  pagecount: {
+			  age: {
 			  	operations: lapidary.NumericOperations
+			  },
+			  gender: {
+			  	operations: lapidary.StringOperations
 			  },
 			  is: {
 			  	operations: lapidary.AbstractOperations
 			  }
 			};
 			var defaultFacet = function(i, v) {
-				return i.name.toLowerCase().indexOf(String(v).toLowerCase()) > -1
+				return (i.firstName.toLowerCase() + " " + i.lastName.toLowerCase()).indexOf(String(v).toLowerCase()) > -1
 			}
 			var l = new lapidary.Lapidary(items, facets, {}, defaultFacet);
 			console.log(l);
 			var handleInputChange = function() {
 				var query = document.getElementById("lapidary-input").value;
 				//console.log(query);
-				var results = l.parseQuery(query);
+				var results = l.parseQuery(query).sort(function(a, b) {
+					return (a.firstName + a.lastName).localeCompare(b.firstName + b.lastName);
+				});
+				updateCount(results);
 				//var resultsArr = JSON.stringify(results);
 				var outputDiv = document.getElementById("output");
 				outputDiv.innerHTML = "";
 				for (r of results) {
 					var e = document.createElement('div');
 					var name = document.createElement('div');
-					name.innerHTML = "Name: " + r.name;
+					name.innerHTML = "<b>Name:</b> " + r.firstName + " " + r.lastName;
 					e.appendChild(name);
-					var edition = document.createElement('div');
-					edition.innerHTML = "Edition: " + r.edition;
-					e.appendChild(edition);
-					var pagecount = document.createElement('div');
-					pagecount.innerHTML = "Page Count: " + r.pagecount;
-					e.appendChild(pagecount);
-
+					var balance = document.createElement('div');
+					balance.innerHTML = "<b>Balance:</b> $" + r.balance;
+					e.appendChild(balance);
+					var age = document.createElement('div');
+					age.innerHTML = "<b>Age:</b> " + r.age;
+					e.appendChild(age);
+					var gender = document.createElement('div');
+					gender.innerHTML = "<b>Gender:</b> " + r.gender;
+					e.appendChild(gender);
 					outputDiv.appendChild(e);
 				}
 
@@ -82,6 +101,9 @@
 			document.addEventListener('DOMContentLoaded', handleInputChange, false);
 		</script>
 		<input id="lapidary-input" onchange="handleInputChange()" type="text"/>
+		<div id="stats">
+			<div id="count"></div>
+		</div>
 		<div id="output"></div>
 	</body>
 </html>
