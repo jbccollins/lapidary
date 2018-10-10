@@ -7,6 +7,7 @@ export type Facets = {
 }
 export type Facet = {
   operations: OperationMapping
+  objectKey: string
 }
 
 export type EvaluationTree = {

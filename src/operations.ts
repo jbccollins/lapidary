@@ -34,7 +34,8 @@ const StringEqualityEvaluationGenerator: FilterGenerator = (
   expression: string
 ): FilterEvaluator => {
   return (item: Item, l: Lapidary) => {
-    return item[facetKey] === cleanString(expression, facetKey)
+    const objectKey = l.getFacet(facetKey).objectKey
+    return item[objectKey] === cleanString(expression, facetKey)
   }
 }
 
@@ -43,7 +44,8 @@ const StringContainsEvaluationGenerator: FilterGenerator = (
   expression: string
 ): FilterEvaluator => {
   return (item: Item, l: Lapidary) => {
-    return item[facetKey].indexOf(cleanString(expression, facetKey)) >= 0
+    const objectKey = l.getFacet(facetKey).objectKey
+    return item[objectKey].indexOf(cleanString(expression, facetKey)) >= 0
   }
 }
 
@@ -52,7 +54,8 @@ const StringNegativeEqualityEvaluationGenerator: FilterGenerator = (
   expression: string
 ): FilterEvaluator => {
   return (item: Item, l: Lapidary) => {
-    return item[facetKey] !== cleanString(expression, facetKey)
+    const objectKey = l.getFacet(facetKey).objectKey
+    return item[objectKey] !== cleanString(expression, facetKey)
   }
 }
 
@@ -61,7 +64,8 @@ const NumericEqualityEvaluationGenerator: FilterGenerator = (
   expression: string
 ): FilterEvaluator => {
   return (item: Item, l: Lapidary) => {
-    return item[facetKey] === cleanNumber(expression, facetKey)
+    const objectKey = l.getFacet(facetKey).objectKey
+    return item[objectKey] === cleanNumber(expression, facetKey)
   }
 }
 
@@ -70,7 +74,8 @@ const NumericNegativeEqualityEvaluationGenerator: FilterGenerator = (
   expression: string
 ): FilterEvaluator => {
   return (item: Item, l: Lapidary) => {
-    return item[facetKey] !== cleanNumber(expression, facetKey)
+    const objectKey = l.getFacet(facetKey).objectKey
+    return item[objectKey] !== cleanNumber(expression, facetKey)
   }
 }
 
@@ -79,7 +84,8 @@ const NumericLTEvaluationGenerator: FilterGenerator = (
   expression: string
 ): FilterEvaluator => {
   return (item: Item, l: Lapidary) => {
-    return item[facetKey] < cleanNumber(expression, facetKey)
+    const objectKey = l.getFacet(facetKey).objectKey
+    return item[objectKey] < cleanNumber(expression, facetKey)
   }
 }
 
@@ -88,7 +94,8 @@ const NumericLTEEvaluationGenerator: FilterGenerator = (
   expression: string
 ): FilterEvaluator => {
   return (item: Item, l: Lapidary) => {
-    return item[facetKey] <= cleanNumber(expression, facetKey)
+    const objectKey = l.getFacet(facetKey).objectKey
+    return item[objectKey] <= cleanNumber(expression, facetKey)
   }
 }
 
@@ -97,7 +104,8 @@ const NumericGTEvaluationGenerator: FilterGenerator = (
   expression: string
 ): FilterEvaluator => {
   return (item: Item, l: Lapidary) => {
-    return item[facetKey] > cleanNumber(expression, facetKey)
+    const objectKey = l.getFacet(facetKey).objectKey
+    return item[objectKey] > cleanNumber(expression, facetKey)
   }
 }
 
@@ -106,7 +114,8 @@ const NumericGTEEvaluationGenerator: FilterGenerator = (
   expression: string
 ): FilterEvaluator => {
   return (item: Item, l: Lapidary) => {
-    return item[facetKey] >= cleanNumber(expression, facetKey)
+    const objectKey = l.getFacet(facetKey).objectKey
+    return item[objectKey] >= cleanNumber(expression, facetKey)
   }
 }
 
@@ -115,9 +124,11 @@ const NumericBetweenEvaluationGenerator: FilterGenerator = (
   expression: string
 ): FilterEvaluator => {
   return (item: Item, l: Lapidary) => {
+    const objectKey = l.getFacet(facetKey).objectKey
     const [lower, upper] = expression.split(',')
     return (
-      item[facetKey] > cleanNumber(lower, facetKey) && item[facetKey] < cleanNumber(upper, facetKey)
+      item[objectKey] > cleanNumber(lower, facetKey) &&
+      item[objectKey] < cleanNumber(upper, facetKey)
     )
   }
 }
@@ -127,10 +138,11 @@ const NumericInclusiveBetweenEvaluationGenerator: FilterGenerator = (
   expression: string
 ): FilterEvaluator => {
   return (item: Item, l: Lapidary) => {
+    const objectKey = l.getFacet(facetKey).objectKey
     const [lower, upper] = expression.split(',')
     return (
-      item[facetKey] >= cleanNumber(lower, facetKey) &&
-      item[facetKey] <= cleanNumber(upper, facetKey)
+      item[objectKey] >= cleanNumber(lower, facetKey) &&
+      item[objectKey] <= cleanNumber(upper, facetKey)
     )
   }
 }

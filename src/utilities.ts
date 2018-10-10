@@ -65,10 +65,37 @@ export const setIn = (target: { [key: string]: any }, keyPath: string[], value: 
 
 export const getIn = (target: { [key: string]: any }, keyPath: string[]): any => {
   if (keyPath.length === 0) {
-    throw new Error('No keys provided in "keyPath" for "getIn"')
+    return target
   }
   if (keyPath.length === 1) {
     return target[keyPath[0]]
   }
-  return getIn(target, keyPath.slice(1))
+  return getIn(target[keyPath[0]], keyPath.slice(1))
+}
+
+//https://codereview.stackexchange.com/questions/45991/balanced-parentheses
+export const parenthesesAreBalanced = (s: string) => {
+  var parentheses = '()',
+    stack = [],
+    i,
+    character,
+    bracePosition
+
+  for (i = 0; (character = s[i]); i++) {
+    bracePosition = parentheses.indexOf(character)
+
+    if (bracePosition === -1) {
+      continue
+    }
+
+    if (bracePosition % 2 === 0) {
+      stack.push(bracePosition + 1) // push next expected brace position
+    } else {
+      if (stack.length === 0 || stack.pop() !== bracePosition) {
+        return false
+      }
+    }
+  }
+
+  return stack.length === 0
 }

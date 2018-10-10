@@ -8,7 +8,7 @@ import {
 } from './types'
 import Lapidary from './lapidary'
 import { AND, OR } from './constants'
-import { splitBalanced } from './utilities'
+import { splitBalanced, parenthesesAreBalanced } from './utilities'
 import { DefaultEvaluationGenerator } from './operations'
 
 const EXPRESSION_REGEX = /.+:.*:/gi
@@ -29,20 +29,29 @@ const isInterpretable = (str: string) => {
   return false
 }
 
+const stripParens = (s: string) => {
+  if (s.startsWith('(') && s.endsWith(')')) {
+    return s.slice(1, -1)
+  }
+  return s
+}
+
 // Idk how to Type the return value for recursive functions
 // This should ultimately return String[][]
 const recursivelySplitString = (input: string, depth: number): any => {
-  let strippedInput: string = input
-  if (strippedInput.startsWith('(') && strippedInput.endsWith(')')) {
-    strippedInput = strippedInput.slice(1, -1)
+  let strippedInput: string = stripParens(input)
+  // Must check for balanced parens. Blindly stripping based on the start and end characters is not safe.
+  // e.g: (name:=:james) OR (name:=:jane) would horribly fail
+  if (!parenthesesAreBalanced(strippedInput)) {
+    strippedInput = input
   }
   const split: string[] = splitBalanced(strippedInput)
   if (split.length === 0 || split.length === 1) {
     if (depth === 0) {
       // If no recursion is needed
-      return [input]
+      return [strippedInput]
     }
-    return input
+    return strippedInput
   }
   return split.map(s => recursivelySplitString(s, depth + 1))
 }
@@ -145,6 +154,7 @@ const generateEvaluationTree = (
 ): EvaluationTree | EvaluationTreeLeaf => {
   // Replace instances of multiple spaces with a single space
   const squashedInput = input.replace(/\s\s+/g, ' ').trim()
+  //  console.log('>>>>>>>>>>>> HELLO')
   const split: String[] = recursivelySplitString(squashedInput, 0)
   const evaluationTree = recursivelyGenerateEvaluators(split, facets)
   return evaluationTree

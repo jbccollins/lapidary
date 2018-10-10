@@ -1,69 +1,165 @@
 <html>
-	<head>
-		<script type='text/javascript' src='../dist/lapidary.iife.js'></script>
-		<script type='text/javascript' src='people.js'></script>
-		<link rel="stylesheet" href="./style.css" media="screen" />
-	</head>
-	<body>
-		<script>
-			var items = window.people;
+<head>
+	<script type='text/javascript' src='../dist/lapidary.iife.js'></script>
+	<script type='text/javascript' src='people.js'></script>
+	<link rel="stylesheet" href="./style.css" media="screen" />
+</head>
+<body>
+	<script>
+		var items = window.people;
+			// var items = [
+			// 	{"_id":"5bb4d5e36dbe812e98657f17","isActive":false,"balance":156836.28,"picture":"http://placehold.it/32x32","age":30,"eyeColor":"blue","firstName":"Ethel","lastName":"Kidd","gender":"female","company":"Poshome","email":"ethelkidd@poshome.com","phone":"(962) 506-2818","address":"719 Dahill Road, Wauhillau, Iowa, 3271","registered":"2017-02-28T01:46:46 +05:00","latitude":-38.447731,"longitude":-121.972304,"tags":["proident","nulla","cupidatat","ea","eiusmod"]},
+			// 	{"_id":"5bb4d5e9924ae7b1f8ab80f8","isActive":false,"balance":118271.46,"picture":"http:derp","age":31,"eyeColor":"blue","firstName":"Ethel","lastName":"Kidd","gender":"female","company":"Overfork","email":"ethelkidd@overfork.com","phone":"(947) 484-3229","address":"880 Dahill Road, Wauhillau, New Jersey, 3016","registered":"2018-01-27T11:02:50 +05:00","latitude":-44.455047,"longitude":-40.115418,"tags":["tempor","fugiat","labore","laboris","quis"]}
+			// ];
 			/*
 			var items = [
-			  {
-			    name: 'War and Peace',
-			    edition: 2,
-			    pagecount: 500,
-			  },
-			  {
-			    name: 'Harry Potter and the Sorcerers Stone',
-			    edition: 1,
-			    pagecount: 300
-			  },
-			  {
-			    name: 'Harry Potter and the Order of the Phoenix',
-			    edition: 1,
-			    pagecount: 560
-			  },
-			  {
-			  	name: 'The Return of the King',
-			  	edition: 2,
-			  	pagecount: 446
-			  },
-			  {
-			  	name: 'Herp a derp',
-			  	edition: 1,
-			  	pagecount: 320
-			  },
-			  {
-			  	name: 'Herp a derp',
-			  	edition: 2,
-			  	pagecount: 320
-			  }
+				{
+					name: 'War and Peace',
+					edition: 2,
+					pagecount: 500,
+				},
+				{
+					name: 'Harry Potter and the Sorcerers Stone',
+					edition: 1,
+					pagecount: 300
+				},
+				{
+					name: 'Harry Potter and the Order of the Phoenix',
+					edition: 1,
+					pagecount: 560
+				},
+				{
+					name: 'The Return of the King',
+					edition: 2,
+					pagecount: 446
+				},
+				{
+					name: 'Herp a derp',
+					edition: 1,
+					pagecount: 320
+				},
+				{
+					name: 'Herp a derp',
+					edition: 2,
+					pagecount: 320
+				}
 			];
 			*/
 			function updateCount(i) {
 				var countDiv = document.getElementById("count");
 				countDiv.innerHTML = "Showing " + i.length + " of " + items.length;
 			}
-			var facets = {
-			  firstName: {
-			    operations: lapidary.StringOperations
-			  },
-			  lastName: {
-			    operations: lapidary.StringOperations
-			  },
-			  balance: {
-			  	operations: lapidary.NumericOperations
-			  },
-			  age: {
-			  	operations: lapidary.NumericOperations
-			  },
-			  gender: {
-			  	operations: lapidary.StringOperations
-			  },
-			  is: {
-			  	operations: lapidary.AbstractOperations
+
+			const DUPLICATE = 'duplicate'
+			const DUPE = 'dupe'
+
+			// const isDuplicate = (expression, item, l) => {
+			// 	const index = l.getCurrentIndex()
+			//   for (let i in l.items) {
+			//     if (i !== index && l.items[i].firstName === item.firstName && l.items[i].lastName === item.lastName) {
+			//       return true;
+			//     }
+			//   }
+			//   return false
+			// }
+
+			const isDuplicate = (expression, item, l) => {
+			  const index = l.getCurrentIndex()
+				if (!l.getInTransientContext([DUPLICATE])) {
+					l.setInTransientContext([DUPLICATE], {})
+				} else if (l.getInTransientContext([DUPLICATE, item.firstName + item.lastName])) {
+					return true
+				}
+			  let count = 0
+			  for (let i in l.items) {
+			    if (l.items[i].firstName === item.firstName && l.items[i].lastName === item.lastName) {
+			      count++
+			    }
+			    if (count > 1) {
+			      l.setInTransientContext([DUPLICATE, item.firstName + item.lastName], true)
+			      return true
+			    }
 			  }
+			  return false
+			}
+
+			// TODO: Extract this to utility or something			
+			// const isDuplicate = (expression, item, l) => {
+			// 	/*
+			// 		UGH this if fucked if is::dupe isn't the first expression. If an item is a duplicate but is first matched
+			// 		by some other preceeding expression then the index will have travelled passed that item so the next potential
+			// 		duplicate will never check it and just say "nope I'm not a duplicate"
+			// 	*/
+			// 	const index = l.getCurrentIndex()
+			// 	// Initialize the transient context if it's not set already
+			// 	if (!l.getInTransientContext([DUPLICATE])) {
+			// 		l.setInTransientContext([DUPLICATE], {})
+			// 	} else if (l.getInTransientContext([DUPLICATE, item.firstName + item.lastName])) {
+			// 		return true
+			// 	}
+			// 	if (index < items.length){
+			// 		for (let i = index + 1; i < l.items.length; i++) {
+			// 			if (l.items[i].firstName === item.firstName && l.items[i].lastName === item.lastName) {
+			// 				l.setInTransientContext([DUPLICATE, item.firstName + item.lastName], true)
+			// 				return true
+			// 			}
+			// 		}
+			// 	}
+			// 	return false
+			// }
+
+			const ExistentialComparator = (expression, item, l) => {
+				switch (expression) {
+					case DUPLICATE:
+					case DUPE:
+					return isDuplicate(expression, item, l)
+					default:
+					throw new Error(`Invalid expression "${expression}" given to ExistentialComparator "is"`)
+				}
+			}
+
+			const ImplicitEvaluationGenerator = (facetKey, expression) => {
+				return (item, l) => {
+					switch (facetKey) {
+						case "is":
+						return ExistentialComparator(expression, item, l)
+						default:
+						throw new Error('Unknown usage of ImplicitEvaluationGenerator')
+					}
+				}
+			}
+
+			const FIRST_NAME_FACET = {
+				operations: lapidary.StringOperations,
+				objectKey: 'firstName'
+			};
+			const LAST_NAME_FACET = {
+				operations: lapidary.StringOperations,
+				objectKey: 'lastName'
+			};
+			var facets = {
+				firstName: FIRST_NAME_FACET,
+				first: FIRST_NAME_FACET,
+				lastName: LAST_NAME_FACET,
+				last: LAST_NAME_FACET,
+				balance: {
+					operations: lapidary.NumericOperations,
+					objectKey: 'balance'
+				},
+				age: {
+					operations: lapidary.NumericOperations,
+					objectKey: 'age'
+				},
+				gender: {
+					operations: lapidary.StringOperations,
+					objectKey: 'gender'
+				},
+				is: {
+					operations: {
+						"": ImplicitEvaluationGenerator
+					},
+					objectKey: ''
+				}
 			};
 			var defaultFacet = function(i, v) {
 				return (i.firstName.toLowerCase() + " " + i.lastName.toLowerCase()).indexOf(String(v).toLowerCase()) > -1
@@ -78,23 +174,24 @@
 				});
 				updateCount(results);
 				//var resultsArr = JSON.stringify(results);
-				var outputDiv = document.getElementById("output");
-				outputDiv.innerHTML = "";
+				var outputBody = document.getElementById("outputBody");
+				outputBody.innerHTML = "";
+				console.log(JSON.stringify(results))
 				for (r of results) {
-					var e = document.createElement('div');
-					var name = document.createElement('div');
-					name.innerHTML = "<b>Name:</b> " + r.firstName + " " + r.lastName;
+					var e = document.createElement('tr');
+					var name = document.createElement('td');
+					name.innerHTML = r.firstName + " " + r.lastName;
 					e.appendChild(name);
-					var balance = document.createElement('div');
-					balance.innerHTML = "<b>Balance:</b> $" + r.balance;
+					var balance = document.createElement('td');
+					balance.innerHTML = r.balance;
 					e.appendChild(balance);
-					var age = document.createElement('div');
-					age.innerHTML = "<b>Age:</b> " + r.age;
+					var age = document.createElement('td');
+					age.innerHTML = r.age;
 					e.appendChild(age);
-					var gender = document.createElement('div');
-					gender.innerHTML = "<b>Gender:</b> " + r.gender;
+					var gender = document.createElement('td');
+					gender.innerHTML = r.gender;
 					e.appendChild(gender);
-					outputDiv.appendChild(e);
+					outputBody.appendChild(e);
 				}
 
 			}
@@ -104,6 +201,18 @@
 		<div id="stats">
 			<div id="count"></div>
 		</div>
-		<div id="output"></div>
+		<div id="output">
+			<table>
+				<thead>
+					<tr>
+						<th>Name</th>
+						<th>Balance</th>
+						<th>Age</th>
+						<th>Gender</th>
+					</tr>
+				</thead>
+				<tbody id="outputBody"></tbody>
+			</table>
+		</div>
 	</body>
-</html>
+	</html>
