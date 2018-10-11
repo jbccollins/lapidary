@@ -5,33 +5,60 @@ import { Item, Facets, ImplicitComparator, FilterEvaluator, FilterGenerator } fr
 
 import { StringOperations, NumericOperations } from '../src/operations'
 import { traverseEvaluationTree, recursivelyGenerateEvaluators } from '../src/helpers'
-const DUPLICATE = 'duplicate'
 
-// TODO: Extract this to utility or something
+const DUPLICATE = 'duplicate'
+const DUPE = 'dupe'
+const TRANSIENT_DUPLICATE = 'transdupe'
 const isDuplicate = (expression: string, item: Item, l: Lapidary) => {
-  const index = l.getCurrentIndex()
-  if (index === 0) {
-    l.setInTransientContext([DUPLICATE], {})
-  } else if (l.getInTransientContext([DUPLICATE, item.name])) {
-    return true
-  }
-  let count = 0
-  for (let i in l.items) {
-    if (l.items[i].name === item.name) {
-      count++
+  if (!l.getInPermanentContext([DUPLICATE])) {
+    let name = ''
+    const duplicateContext: { [key: string]: any } = {}
+    for (let i = 0; i < l.items.length; i++) {
+      name = l.items[i].name
+      if (duplicateContext[name]) {
+        continue
+      }
+      if (i < items.length) {
+        for (let j = i + 1; j < l.items.length; j++) {
+          if (items[j].name == name) {
+            duplicateContext[name] = true
+          }
+        }
+      }
     }
-    if (count > 1) {
-      l.setInTransientContext([DUPLICATE, item.name], true)
-      return true
-    }
+    l.setInPermanentContext([DUPLICATE], duplicateContext)
   }
-  return false
+  return l.getInPermanentContext([DUPLICATE, item.name])
 }
 
+const isTransientDuplicate = (expression: string, item: Item, l: Lapidary) => {
+  if (!l.getInTransientContext([DUPLICATE])) {
+    let name = ''
+    const duplicateContext: { [key: string]: any } = {}
+    for (let i = 0; i < l.items.length; i++) {
+      name = l.items[i].name
+      if (duplicateContext[name]) {
+        continue
+      }
+      if (i < items.length) {
+        for (let j = i + 1; j < l.items.length; j++) {
+          if (items[j].name == name) {
+            duplicateContext[name] = true
+          }
+        }
+      }
+    }
+    l.setInTransientContext([DUPLICATE], duplicateContext)
+  }
+  return l.getInTransientContext([DUPLICATE, item.name])
+}
 const ExistentialComparator: ImplicitComparator = (expression: string, item: Item, l: Lapidary) => {
   switch (expression) {
     case DUPLICATE:
+    case DUPE:
       return isDuplicate(expression, item, l)
+    case TRANSIENT_DUPLICATE:
+      return isTransientDuplicate(expression, item, l)
     default:
       throw new Error(`Invalid expression "${expression}" given to ExistentialComparator "is"`)
   }
@@ -114,7 +141,8 @@ const aliases = {
 
 const options = {
   defaultFacet,
-  aliases
+  aliases,
+  defaultSuggestion: "Try 'edition:=:2' OR name:contains:Harry"
 }
 
 describe('Instantiation', () => {
@@ -154,14 +182,24 @@ describe('Generic Malformed Queries', () => {
 })
 
 describe('String Queries', () => {
-  it('Evaluates equality', () => {
+  it('Evaluates case sensitive equality', () => {
     const lapidary = new Lapidary(items, facets, options)
-    const results = lapidary.parseQuery('name:=:"Harry Potter and the Sorcerers Stone"')
+    const results = lapidary.parseQuery('name:==:"Harry Potter and the Sorcerers Stone"')
     expect(results).toEqual([HP_1ST])
   }),
-    it('Evaluates negative equality', () => {
+    it('Evaluates case sensitive negative equality', () => {
       const lapidary = new Lapidary(items, facets, options)
-      const results = lapidary.parseQuery('name:!=:"Harry Potter and the Sorcerers Stone"')
+      const results = lapidary.parseQuery('name:!==:"Harry Potter and the Sorcerers Stone"')
+      expect(results).toEqual([WP_1ST, WP_2ND, MDT_1ST, MDT_2ND])
+    }),
+    it('Evaluates case insensitive equality', () => {
+      const lapidary = new Lapidary(items, facets, options)
+      const results = lapidary.parseQuery('name:=:"harry Potter and the Sorcerers Stone"')
+      expect(results).toEqual([HP_1ST])
+    }),
+    it('Evaluates case insensitive negative equality', () => {
+      const lapidary = new Lapidary(items, facets, options)
+      const results = lapidary.parseQuery('name:!=:"harry Potter and the Sorcerers Stone"')
       expect(results).toEqual([WP_1ST, WP_2ND, MDT_1ST, MDT_2ND])
     }),
     it('Evaluates contains', () => {
@@ -252,7 +290,6 @@ describe('Join Queries', () => {
       expect(results).toEqual([MDT_2ND])
     }),
     it('Handles nested parens', () => {
-      console.log('NESTED PARENS')
       const lapidary = new Lapidary(items, facets, options)
       const results = lapidary.parseQuery(
         '(name:=:"My Derpy Turtle" AND (edition:=:2 OR (edition:=:3 AND edition:!=:1)))'
@@ -260,7 +297,6 @@ describe('Join Queries', () => {
       expect(results).toEqual([MDT_2ND])
     }),
     it('Handles sibling parens', () => {
-      console.log('SIBLING PARENS')
       const lapidary = new Lapidary(items, facets, options)
       const results = lapidary.parseQuery(
         '(name:=:"My Derpy Turtle") AND (edition:=:2 OR edition:=:3)'
@@ -268,7 +304,6 @@ describe('Join Queries', () => {
       expect(results).toEqual([MDT_2ND])
     }),
     it('Handles extraneous, nested and sibling parens combined', () => {
-      console.log('SIBLING PARENS')
       const lapidary = new Lapidary(items, facets, options)
       const results = lapidary.parseQuery(
         '(((name:=:"My Derpy Turtle") AND (edition:=:2 OR edition:=:3)) AND name:contains:Derpy)'
@@ -286,11 +321,16 @@ describe('Raw Queries', () => {
 })
 
 describe('Abstract Queries', () => {
-  it('Handles duplicate', () => {
+  it('Handles permanent duplicate', () => {
     const lapidary = new Lapidary([WP_1ST, HP_1ST, WP_1ST], facets, options)
     const results = lapidary.parseQuery(`is::duplicate`)
     expect(results).toEqual([WP_1ST, WP_1ST])
   }),
+    it('Handles transient duplicate', () => {
+      const lapidary = new Lapidary([WP_1ST, HP_1ST, WP_1ST], facets, options)
+      const results = lapidary.parseQuery(`is::transdupe`)
+      expect(results).toEqual([WP_1ST, WP_1ST])
+    }),
     it('Fails given invalid existential usage', () => {
       const lapidary = new Lapidary(items, facets, options)
       expect(() => lapidary.parseQuery(`is::derp`)).toThrow(

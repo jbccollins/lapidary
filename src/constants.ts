@@ -1,18 +1,20 @@
-const LESS_THAN = '<'
-const GREATER_THAN = '>'
-const LESS_THAN_OR_EQUAL = '<='
-const GREATER_THAN_OR_EQUAL = '>='
-const EQUAL = '='
-const NOT_EQUAL = '!='
-const CONTAINS = 'contains'
-
-const STRING = 'string'
-const NUMERIC = 'numeric'
 const BETWEEN = 'between'
+const CASE_INSENSITIVE_EQUAL = '='
+const CASE_INSENSITIVE_NOT_EQUAL = '!='
+const CASE_SENSITIVE_EQUAL = '=='
+const CASE_SENSITIVE_NOT_EQUAL = '!=='
+const CONTAINS = 'contains'
+const EQUAL = '='
+const GREATER_THAN = '>'
+const GREATER_THAN_OR_EQUAL = '>='
+const IMPLICIT = ''
 const INCLUSIVE_BETWEEN = 'inbetween'
 const IS = 'is'
-
-const IMPLICIT = ''
+const LESS_THAN = '<'
+const LESS_THAN_OR_EQUAL = '<='
+const NOT_EQUAL = '!='
+const NUMERIC = 'numeric'
+const STRING = 'string'
 
 const COMPARISONS = [
   NOT_EQUAL,
@@ -29,22 +31,33 @@ const OR = 'OR'
 
 const JOINS = [AND, OR]
 
+/* SUGGESTION REGEX */
+
+const FACET_SUGGESTION_REGEX = /\w+/gi
+
+/* END SUGGESTION REGEX */
+
 export {
-  STRING,
-  NUMERIC,
-  LESS_THAN,
-  GREATER_THAN,
-  LESS_THAN_OR_EQUAL,
-  GREATER_THAN_OR_EQUAL,
-  EQUAL,
-  COMPARISONS,
   AND,
-  OR,
-  NOT_EQUAL,
-  JOINS,
-  CONTAINS,
   BETWEEN,
+  CASE_INSENSITIVE_EQUAL,
+  CASE_INSENSITIVE_NOT_EQUAL,
+  CASE_SENSITIVE_EQUAL,
+  CASE_SENSITIVE_NOT_EQUAL,
+  COMPARISONS,
+  CONTAINS,
+  EQUAL,
+  FACET_SUGGESTION_REGEX,
+  GREATER_THAN,
+  GREATER_THAN_OR_EQUAL,
+  IMPLICIT,
   INCLUSIVE_BETWEEN,
   IS,
-  IMPLICIT
+  JOINS,
+  LESS_THAN,
+  LESS_THAN_OR_EQUAL,
+  NOT_EQUAL,
+  NUMERIC,
+  OR,
+  STRING
 }

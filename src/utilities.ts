@@ -73,15 +73,16 @@ export const getIn = (target: { [key: string]: any }, keyPath: string[]): any =>
   return getIn(target[keyPath[0]], keyPath.slice(1))
 }
 
-//https://codereview.stackexchange.com/questions/45991/balanced-parentheses
+// https://codereview.stackexchange.com/questions/45991/balanced-parentheses
 export const parenthesesAreBalanced = (s: string) => {
-  var parentheses = '()',
-    stack = [],
-    i,
-    character,
-    bracePosition
+  const parentheses = '()'
+  const stack = []
+  let i = 0
+  let character = null
+  let bracePosition = 0
 
-  for (i = 0; (character = s[i]); i++) {
+  for (i = 0; i < s.length; i++) {
+    character = s[i]
     bracePosition = parentheses.indexOf(character)
 
     if (bracePosition === -1) {

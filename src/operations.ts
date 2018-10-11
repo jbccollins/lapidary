@@ -2,15 +2,19 @@ import { FilterEvaluator, FilterGenerator, Item, Facets, OperationMapping } from
 
 import Lapidary from './lapidary'
 import {
-  EQUAL,
-  NOT_EQUAL,
-  GREATER_THAN_OR_EQUAL,
-  LESS_THAN_OR_EQUAL,
-  LESS_THAN,
-  GREATER_THAN,
-  CONTAINS,
   BETWEEN,
-  INCLUSIVE_BETWEEN
+  CASE_INSENSITIVE_EQUAL,
+  CASE_INSENSITIVE_NOT_EQUAL,
+  CASE_SENSITIVE_EQUAL,
+  CASE_SENSITIVE_NOT_EQUAL,
+  CONTAINS,
+  EQUAL,
+  GREATER_THAN,
+  GREATER_THAN_OR_EQUAL,
+  INCLUSIVE_BETWEEN,
+  LESS_THAN,
+  LESS_THAN_OR_EQUAL,
+  NOT_EQUAL
 } from './constants'
 
 // String quotes when doing string operations
@@ -39,6 +43,16 @@ const StringEqualityEvaluationGenerator: FilterGenerator = (
   }
 }
 
+const StringCaseInsensetiveEqualityEvaluationGenerator: FilterGenerator = (
+  facetKey: keyof Facets,
+  expression: string
+): FilterEvaluator => {
+  return (item: Item, l: Lapidary) => {
+    const objectKey = l.getFacet(facetKey).objectKey
+    return item[objectKey].toLowerCase() === cleanString(expression, facetKey).toLowerCase()
+  }
+}
+
 const StringContainsEvaluationGenerator: FilterGenerator = (
   facetKey: keyof Facets,
   expression: string
@@ -56,6 +70,16 @@ const StringNegativeEqualityEvaluationGenerator: FilterGenerator = (
   return (item: Item, l: Lapidary) => {
     const objectKey = l.getFacet(facetKey).objectKey
     return item[objectKey] !== cleanString(expression, facetKey)
+  }
+}
+
+const StringNegativeCaseInsensitiveEqualityEvaluationGenerator: FilterGenerator = (
+  facetKey: keyof Facets,
+  expression: string
+): FilterEvaluator => {
+  return (item: Item, l: Lapidary) => {
+    const objectKey = l.getFacet(facetKey).objectKey
+    return item[objectKey].toLowerCase() !== cleanString(expression, facetKey).toLowerCase()
   }
 }
 
@@ -155,8 +179,10 @@ const DefaultEvaluationGenerator: FilterGenerator = (
 }
 
 const StringOperations: OperationMapping = {
-  [EQUAL]: StringEqualityEvaluationGenerator,
-  [NOT_EQUAL]: StringNegativeEqualityEvaluationGenerator,
+  [CASE_SENSITIVE_EQUAL]: StringEqualityEvaluationGenerator,
+  [CASE_SENSITIVE_NOT_EQUAL]: StringNegativeEqualityEvaluationGenerator,
+  [CASE_INSENSITIVE_EQUAL]: StringCaseInsensetiveEqualityEvaluationGenerator,
+  [CASE_INSENSITIVE_NOT_EQUAL]: StringNegativeCaseInsensitiveEqualityEvaluationGenerator,
   [CONTAINS]: StringContainsEvaluationGenerator
 }
 
