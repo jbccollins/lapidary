@@ -1,50 +1,12 @@
 <html>
-<head>
-	<script type='text/javascript' src='../dist/lapidary.iife.js'></script>
-	<script type='text/javascript' src='people.js'></script>
-	<link rel="stylesheet" href="./style.css" media="screen" />
-</head>
-<body>
-	<script>
-		var items = window.people;
-			// var items = [
-			// 	{"_id":"5bb4d5e36dbe812e98657f17","isActive":false,"balance":156836.28,"picture":"http://placehold.it/32x32","age":30,"eyeColor":"blue","firstName":"Ethel","lastName":"Kidd","gender":"female","company":"Poshome","email":"ethelkidd@poshome.com","phone":"(962) 506-2818","address":"719 Dahill Road, Wauhillau, Iowa, 3271","registered":"2017-02-28T01:46:46 +05:00","latitude":-38.447731,"longitude":-121.972304,"tags":["proident","nulla","cupidatat","ea","eiusmod"]},
-			// 	{"_id":"5bb4d5e9924ae7b1f8ab80f8","isActive":false,"balance":118271.46,"picture":"http:derp","age":31,"eyeColor":"blue","firstName":"Ethel","lastName":"Kidd","gender":"female","company":"Overfork","email":"ethelkidd@overfork.com","phone":"(947) 484-3229","address":"880 Dahill Road, Wauhillau, New Jersey, 3016","registered":"2018-01-27T11:02:50 +05:00","latitude":-44.455047,"longitude":-40.115418,"tags":["tempor","fugiat","labore","laboris","quis"]}
-			// ];
-			/*
-			var items = [
-				{
-					name: 'War and Peace',
-					edition: 2,
-					pagecount: 500,
-				},
-				{
-					name: 'Harry Potter and the Sorcerers Stone',
-					edition: 1,
-					pagecount: 300
-				},
-				{
-					name: 'Harry Potter and the Order of the Phoenix',
-					edition: 1,
-					pagecount: 560
-				},
-				{
-					name: 'The Return of the King',
-					edition: 2,
-					pagecount: 446
-				},
-				{
-					name: 'Herp a derp',
-					edition: 1,
-					pagecount: 320
-				},
-				{
-					name: 'Herp a derp',
-					edition: 2,
-					pagecount: 320
-				}
-			];
-			*/
+	<head>
+		<script type='text/javascript' src='../dist/lapidary.iife.js'></script>
+		<script type='text/javascript' src='people.js'></script>
+		<link rel="stylesheet" href="./style.css" media="screen" />
+	</head>
+	<body>
+		<script>
+			var items = window.people;
 			function updateCount(i) {
 				var countDiv = document.getElementById("count");
 				countDiv.innerHTML = "Showing " + i.length + " of " + items.length;
@@ -54,25 +16,25 @@
 			const DUPE = 'dupe'
 
 			const isDuplicate = (expression, item, l) => {
-			  if (!l.getInPermanentContext([DUPLICATE])) {
-			    let name = ""
-			    const duplicateContext = {}
-			    for (let i = 0; i < l.items.length; i++) {
-			      name = l.items[i].firstName + l.items[i].lastName
-			      if (duplicateContext[name]) {
-			        continue;
-			      }
-			      if (i < items.length){
-			        for (let j = i + 1; j < l.items.length; j++) {
-			          if (items[j].firstName + items[j].lastName == name) {
-			            duplicateContext[name] = true;
-			          }
-			        }
-			      }
-			    }
-			    l.setInPermanentContext([DUPLICATE], duplicateContext)
-			  }
-			  return l.getInPermanentContext([DUPLICATE, item.firstName + item.lastName])
+				if (!l.getInPermanentContext([DUPLICATE])) {
+				let name = ""
+				const duplicateContext = {}
+				for (let i = 0; i < l.items.length; i++) {
+					name = l.items[i].firstName + l.items[i].lastName
+					if (duplicateContext[name]) {
+					continue;
+					}
+					if (i < items.length){
+					for (let j = i + 1; j < l.items.length; j++) {
+						if (items[j].firstName + items[j].lastName == name) {
+						duplicateContext[name] = true;
+						}
+					}
+					}
+				}
+				l.setInPermanentContext([DUPLICATE], duplicateContext)
+				}
+				return l.getInPermanentContext([DUPLICATE, item.firstName + item.lastName])
 			}
 
 			const ExistentialComparator = (expression, item, l) => {
@@ -136,7 +98,7 @@
 			var handleInputChange = function() {
 				document.getElementById("lapidary-input").placeholder = l.defaultSuggestion;
 				var query = document.getElementById("lapidary-input").value;
-				l.getSuggestions(query, 0);
+				//l.getSuggestions(query, 0);
 				//console.log(query);
 				var results = l.parseQuery(query).sort(function(a, b) {
 					return (a.firstName + a.lastName).localeCompare(b.firstName + b.lastName);
@@ -183,4 +145,4 @@
 			</table>
 		</div>
 	</body>
-	</html>
+</html>
