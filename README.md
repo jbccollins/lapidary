@@ -12,6 +12,15 @@ Heavily inspired by [Destiny Item Manager](https://github.com/DestinyItemManager
 
 The idea is to basically just build a generic version of that.
 
+[Here is a work in progress demo](https://jbccollins.github.io/lapidary/demo/index.html)
+
+This screenshot kinda shows some of the more advanced types of queries you can do with lapidary.
+Right now I don't have documentation on what exactly is possible since so much is still in flux with the code.
+![](https://i.imgur.com/qb46YMG.png)
+
+At this point it's almost fully functional. I'd like to build a useful little input component around it to make it more approachable though.
+
+
 ## Why "Lapidary" though?
 
 ```
