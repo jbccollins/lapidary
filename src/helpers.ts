@@ -7,12 +7,14 @@ import {
   Item
 } from './types'
 import Lapidary from './lapidary'
-import { AND, OR } from './constants'
+import { AND, OR, NOT } from './constants'
 import { splitBalanced, parenthesesAreBalanced } from './utilities'
 import { DefaultEvaluationGenerator } from './operations'
 
 const EXPRESSION_REGEX = /.+:.*:/gi
 // const EXPRESSION_REGEX = /.+:.*:.+/gi
+
+const alwaysTrueFilterEvaluator: FilterEvaluator = (item: Item, l: Lapidary) => true
 
 const isInterpretable = (str: string) => {
   /* Currently unused because of recursivelySplitString
@@ -99,14 +101,19 @@ export const traverseEvaluationTree = (
     return (evalutionTree as EvaluationTreeLeaf).filterEvaluator(item, l)
   }
   const tree = evalutionTree as EvaluationTree
+
   // TODO: This is kinda messy.... And I'm not even sure the last case is necessary
   if (tree.left && tree.right) {
     if (tree.joinType === AND) {
       return (
-        traverseEvaluationTree(item, tree.left, l) && traverseEvaluationTree(item, tree.right, l)
+        traverseEvaluationTree(item, tree.left, l) &&
+        !tree.invert === traverseEvaluationTree(item, tree.right, l)
       )
     }
-    return traverseEvaluationTree(item, tree.left, l) || traverseEvaluationTree(item, tree.right, l)
+    return (
+      traverseEvaluationTree(item, tree.left, l) ||
+      !tree.invert === traverseEvaluationTree(item, tree.right, l)
+    )
   }
   return traverseEvaluationTree(item, tree.left, l)
 }
@@ -119,32 +126,47 @@ export const recursivelyGenerateEvaluators = (
     if (split.length < 1) {
       throw new Error('Invalid syntax')
     }
-    // Case like (foo:=:bar) which will become ["foo:=bar"]
+    // Special case for when the query string starts with NOT. e.g. "NOT (is::duplicate)"
+    if (split[0] === NOT && split[1]) {
+      return {
+        left: { filterEvaluator: alwaysTrueFilterEvaluator, raw: '' }, // Make a dummy left side that will always return true
+        joinType: AND,
+        invert: true,
+        right: recursivelyGenerateEvaluators(split[1], facets)
+      }
+    }
+    // Case like (foo:=:bar) which will become ["foo:=:bar"]
     if (split.length === 1) {
       return {
         left: recursivelyGenerateEvaluators(split[0], facets),
         joinType: null,
+        invert: false,
         right: null
       }
     }
     // Explicit join type
     if (split[1] === OR || split[1] === AND) {
+      const inverted = split[2] && split[2] === NOT
       return {
         left: recursivelyGenerateEvaluators(split[0], facets),
         joinType: split[1],
-        right: recursivelyGenerateEvaluators(split.slice(2), facets)
+        invert: inverted, // "foo:=:bar AND NOT bar:=:foo"
+        right: recursivelyGenerateEvaluators(split.slice(inverted ? 3 : 2), facets)
       }
     }
     // Implicit "AND" join type
+    const inverted = split[1] && split[1] === NOT
     return {
       left: recursivelyGenerateEvaluators(split[0], facets),
       joinType: AND,
-      right: recursivelyGenerateEvaluators(split.slice(1), facets)
+      invert: inverted, // "foo:=:bar NOT bar:=:foo"
+      right: recursivelyGenerateEvaluators(split.slice(inverted ? 2 : 1), facets)
     }
   }
   // String as EvaluationLeaf
   return {
-    filterEvaluator: predicateToFilterEvaluator(split, facets)
+    filterEvaluator: predicateToFilterEvaluator(split, facets),
+    raw: split
   }
 }
 
@@ -154,7 +176,6 @@ const generateEvaluationTree = (
 ): EvaluationTree | EvaluationTreeLeaf => {
   // Replace instances of multiple spaces with a single space
   const squashedInput = input.replace(/\s\s+/g, ' ').trim()
-  //  console.log('>>>>>>>>>>>> HELLO')
   const split: String[] = recursivelySplitString(squashedInput, 0)
   const evaluationTree = recursivelyGenerateEvaluators(split, facets)
   return evaluationTree

@@ -2,7 +2,7 @@ import { StringOperations, NumericOperations } from './operations'
 import { EvaluationTree, EvaluationTreeLeaf, Item, Facets, Facet } from './types'
 import { generateEvaluationTree, traverseEvaluationTree } from './helpers'
 import { setIn, getIn } from './utilities'
-// import { FACET_SUGGESTION_REGEX } from './constants'
+import { FACET_SUGGESTION_REGEX } from './constants'
 
 export default class Lapidary {
   items: Item[]
@@ -13,7 +13,7 @@ export default class Lapidary {
   setInPermanentContext: (keyPath: string[], value: any) => void
   getInPermanentContext: (keyPath: string[]) => any
   parseQuery: (query: string) => Item[]
-  // getSuggestions: (query: string, position: number) => string[]
+  getSuggestions: (query: string, position: number) => string[]
   defaultFacet: (i: Item, s: string | number) => boolean
   defaultSuggestion: string
   getCurrentIndex: () => number
@@ -85,13 +85,14 @@ export default class Lapidary {
       9) 
 
     */
-    // this.getSuggestions = (query: string, position: number): string[] => {
-    //   const facetMatch = query.match(FACET_SUGGESTION_REGEX);
-    //   if (facetMatch) {
-    //     console.log(facetMatch);
-    //   }
-    //   return [];
-    // }
+    this.getSuggestions = (query: string, position: number): string[] => {
+      const facetMatch = query.match(FACET_SUGGESTION_REGEX)
+      if (facetMatch) {
+        const matchingFacets = Object.keys(this.facets).filter(k => k.startsWith(facetMatch[0]))
+        return matchingFacets
+      }
+      return []
+    }
   }
 }
 

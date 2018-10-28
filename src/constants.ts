@@ -28,6 +28,7 @@ const COMPARISONS = [
 
 const AND = 'AND'
 const OR = 'OR'
+const NOT = 'NOT'
 
 const JOINS = [AND, OR]
 
@@ -56,6 +57,7 @@ export {
   JOINS,
   LESS_THAN,
   LESS_THAN_OR_EQUAL,
+  NOT,
   NOT_EQUAL,
   NUMERIC,
   OR,

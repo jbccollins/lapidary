@@ -11,6 +11,7 @@ export default class Lapidary {
     setInPermanentContext: (keyPath: string[], value: any) => void;
     getInPermanentContext: (keyPath: string[]) => any;
     parseQuery: (query: string) => Item[];
+    getSuggestions: (query: string, position: number) => string[];
     defaultFacet: (i: Item, s: string | number) => boolean;
     defaultSuggestion: string;
     getCurrentIndex: () => number;

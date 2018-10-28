@@ -19,6 +19,9 @@
   var NOT_EQUAL = '!=';
   var AND = 'AND';
   var OR = 'OR';
+  var NOT = 'NOT';
+  /* SUGGESTION REGEX */
+  var FACET_SUGGESTION_REGEX = /\w+/gi;
 
   var _a, _b;
   // String quotes when doing string operations
@@ -245,6 +248,7 @@
 
   var EXPRESSION_REGEX = /.+:.*:/gi;
   // const EXPRESSION_REGEX = /.+:.*:.+/gi
+  var alwaysTrueFilterEvaluator = function (item, l) { return true; };
   var isInterpretable = function (str) {
       /* Currently unused because of recursivelySplitString
       if (str.startsWith('(') && str.endsWith(')')) {
@@ -316,12 +320,12 @@
           return evalutionTree.filterEvaluator(item, l);
       }
       var tree = evalutionTree;
-      // TODO: This is kinda messy.... And I'm not even sure the last case is necessary
+      // TODO: This is kinda messy.... And I'm not even sure the last case is necessary  
       if (tree.left && tree.right) {
           if (tree.joinType === AND) {
-              return (traverseEvaluationTree(item, tree.left, l) && traverseEvaluationTree(item, tree.right, l));
+              return (traverseEvaluationTree(item, tree.left, l) && (!tree.invert === traverseEvaluationTree(item, tree.right, l)));
           }
-          return traverseEvaluationTree(item, tree.left, l) || traverseEvaluationTree(item, tree.right, l);
+          return traverseEvaluationTree(item, tree.left, l) || (!tree.invert === traverseEvaluationTree(item, tree.right, l));
       }
       return traverseEvaluationTree(item, tree.left, l);
   };
@@ -330,44 +334,57 @@
           if (split.length < 1) {
               throw new Error('Invalid syntax');
           }
-          // Case like (foo:=:bar) which will become ["foo:=bar"]
+          // Special case for when the query string starts with NOT. e.g. "NOT (is::duplicate)"
+          if (split[0] === NOT && split[1]) {
+              return {
+                  left: { filterEvaluator: alwaysTrueFilterEvaluator, raw: "" },
+                  joinType: AND,
+                  invert: true,
+                  right: recursivelyGenerateEvaluators(split[1], facets)
+              };
+          }
+          // Case like (foo:=:bar) which will become ["foo:=:bar"]
           if (split.length === 1) {
               return {
                   left: recursivelyGenerateEvaluators(split[0], facets),
                   joinType: null,
+                  invert: false,
                   right: null
               };
           }
           // Explicit join type
           if (split[1] === OR || split[1] === AND) {
+              var inverted_1 = split[2] && split[2] === NOT;
               return {
                   left: recursivelyGenerateEvaluators(split[0], facets),
                   joinType: split[1],
-                  right: recursivelyGenerateEvaluators(split.slice(2), facets)
+                  invert: inverted_1,
+                  right: recursivelyGenerateEvaluators(split.slice(inverted_1 ? 3 : 2), facets)
               };
           }
           // Implicit "AND" join type
+          var inverted = split[1] && split[1] === NOT;
           return {
               left: recursivelyGenerateEvaluators(split[0], facets),
               joinType: AND,
-              right: recursivelyGenerateEvaluators(split.slice(1), facets)
+              invert: inverted,
+              right: recursivelyGenerateEvaluators(split.slice(inverted ? 2 : 1), facets)
           };
       }
       // String as EvaluationLeaf
       return {
-          filterEvaluator: predicateToFilterEvaluator(split, facets)
+          filterEvaluator: predicateToFilterEvaluator(split, facets),
+          raw: split
       };
   };
   var generateEvaluationTree = function (input, facets) {
       // Replace instances of multiple spaces with a single space
       var squashedInput = input.replace(/\s\s+/g, ' ').trim();
-      //  console.log('>>>>>>>>>>>> HELLO')
       var split = recursivelySplitString(squashedInput, 0);
       var evaluationTree = recursivelyGenerateEvaluators(split, facets);
       return evaluationTree;
   };
 
-  // import { FACET_SUGGESTION_REGEX } from './constants'
   var Lapidary = /** @class */ (function () {
       function Lapidary(items, facets, options) {
           var _this = this;
@@ -419,13 +436,14 @@
             9)
       
           */
-          // this.getSuggestions = (query: string, position: number): string[] => {
-          //   const facetMatch = query.match(FACET_SUGGESTION_REGEX);
-          //   if (facetMatch) {
-          //     console.log(facetMatch);
-          //   }
-          //   return [];
-          // }
+          this.getSuggestions = function (query, position) {
+              var facetMatch = query.match(FACET_SUGGESTION_REGEX);
+              if (facetMatch) {
+                  var matchingFacets = Object.keys(_this.facets).filter(function (k) { return k.startsWith(facetMatch[0]); });
+                  return matchingFacets;
+              }
+              return [];
+          };
       }
       return Lapidary;
   }());

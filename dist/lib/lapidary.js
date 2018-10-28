@@ -5,7 +5,7 @@ exports.StringOperations = operations_1.StringOperations;
 exports.NumericOperations = operations_1.NumericOperations;
 var helpers_1 = require("./helpers");
 var utilities_1 = require("./utilities");
-// import { FACET_SUGGESTION_REGEX } from './constants'
+var constants_1 = require("./constants");
 var Lapidary = /** @class */ (function () {
     function Lapidary(items, facets, options) {
         var _this = this;
@@ -57,13 +57,14 @@ var Lapidary = /** @class */ (function () {
           9)
     
         */
-        // this.getSuggestions = (query: string, position: number): string[] => {
-        //   const facetMatch = query.match(FACET_SUGGESTION_REGEX);
-        //   if (facetMatch) {
-        //     console.log(facetMatch);
-        //   }
-        //   return [];
-        // }
+        this.getSuggestions = function (query, position) {
+            var facetMatch = query.match(constants_1.FACET_SUGGESTION_REGEX);
+            if (facetMatch) {
+                var matchingFacets = Object.keys(_this.facets).filter(function (k) { return k.startsWith(facetMatch[0]); });
+                return matchingFacets;
+            }
+            return [];
+        };
     }
     return Lapidary;
 }());

@@ -9,7 +9,7 @@ import { traverseEvaluationTree, recursivelyGenerateEvaluators } from '../src/he
 const DUPLICATE = 'duplicate'
 const DUPE = 'dupe'
 const TRANSIENT_DUPLICATE = 'transdupe'
-const isDuplicate = (expression: string, item: Item, l: Lapidary) => {
+const isDuplicate = (expression: string, item: Item, l: Lapidary): boolean => {
   if (!l.getInPermanentContext([DUPLICATE])) {
     let name = ''
     const duplicateContext: { [key: string]: any } = {}
@@ -28,10 +28,10 @@ const isDuplicate = (expression: string, item: Item, l: Lapidary) => {
     }
     l.setInPermanentContext([DUPLICATE], duplicateContext)
   }
-  return l.getInPermanentContext([DUPLICATE, item.name])
+  return l.getInPermanentContext([DUPLICATE, item.name]) === true
 }
 
-const isTransientDuplicate = (expression: string, item: Item, l: Lapidary) => {
+const isTransientDuplicate = (expression: string, item: Item, l: Lapidary): boolean => {
   if (!l.getInTransientContext([DUPLICATE])) {
     let name = ''
     const duplicateContext: { [key: string]: any } = {}
@@ -50,7 +50,7 @@ const isTransientDuplicate = (expression: string, item: Item, l: Lapidary) => {
     }
     l.setInTransientContext([DUPLICATE], duplicateContext)
   }
-  return l.getInTransientContext([DUPLICATE, item.name])
+  return l.getInTransientContext([DUPLICATE, item.name]) === true
 }
 const ExistentialComparator: ImplicitComparator = (expression: string, item: Item, l: Lapidary) => {
   switch (expression) {
@@ -345,24 +345,75 @@ describe('Miscellaneous', () => {
     const r = traverseEvaluationTree(WP_1ST, null, lapidary)
     expect(r).toBe(false)
   }),
-    it('Handles extra spaces', () => {
+    it('Handles extra spaces between expressions', () => {
       const lapidary = new Lapidary(items, facets, options)
       const results = lapidary.parseQuery('name:=:"My Derpy Turtle"            edition:=:2        ')
+      expect(results).toEqual([MDT_2ND])
+    }),
+    it('Handles extra spaces after parentheses expressions', () => {
+      const lapidary = new Lapidary(items, facets, options)
+      const results = lapidary.parseQuery(
+        '(  name:=:"My Derpy Turtle" AND (  edition:=:2 OR (    edition:=:3 AND edition:!=:1      ) )  )  '
+      )
       expect(results).toEqual([MDT_2ND])
     }),
     it('Fails on an empty split', () => {
       expect(() => recursivelyGenerateEvaluators([], facets)).toThrow(`Invalid syntax`)
     })
 })
-/*
-Ok some shit's fucked here.
-These two identical queries return different results:
 
-  (is::dupe OR age:between:30,32) AND first:=:Ethel AND last:=:Kidd
-  >> returns 2 Ethel Kidd
+describe('Suggestions', () => {
+  it('Handles empty facet key suggestions', () => {
+    const lapidary = new Lapidary(items, facets, options)
+    const suggestions = lapidary.getSuggestions('', 0)
+    expect(suggestions).toEqual([])
+  }),
+    it('Handles unknown facet key suggestions', () => {
+      const lapidary = new Lapidary(items, facets, options)
+      const suggestions = lapidary.getSuggestions('derp', 0)
+      expect(suggestions).toEqual([])
+    }),
+    it('Handles valid facet key suggestions', () => {
+      const lapidary = new Lapidary(items, facets, options)
+      const suggestions = lapidary.getSuggestions('nam', 0)
+      expect(suggestions).toEqual(['name'])
+    })
+})
 
-  (age:between:30,32 OR is::dupe) AND first:=:Ethel AND last:=:Kidd
-  >> returns 1 Ethel Kidd
-
-
-*/
+describe('Negation', () => {
+  it('Handles leading negation', () => {
+    const lapidary = new Lapidary(items, facets, options)
+    const results = lapidary.parseQuery('NOT name:=:"My Derpy Turtle"')
+    expect(results).toEqual([WP_1ST, WP_2ND, HP_1ST])
+  }),
+    it('Handles leading negation with parentheses', () => {
+      const lapidary = new Lapidary(items, facets, options)
+      const results = lapidary.parseQuery('NOT (name:=:"My Derpy Turtle")')
+      expect(results).toEqual([WP_1ST, WP_2ND, HP_1ST])
+    }),
+    it('Handles nested negation with explicit AND', () => {
+      const lapidary = new Lapidary(items, facets, options)
+      const results = lapidary.parseQuery('name:=:"My Derpy Turtle" AND NOT edition:=:2')
+      expect(results).toEqual([MDT_1ST])
+    }),
+    it('Handles nested negation with explicit AND and parentheses', () => {
+      const lapidary = new Lapidary(items, facets, options)
+      const results = lapidary.parseQuery('name:=:"My Derpy Turtle" AND NOT (edition:=:2)')
+      expect(results).toEqual([MDT_1ST])
+    }),
+    it('Handles nested negation with implicit AND', () => {
+      const lapidary = new Lapidary(items, facets, options)
+      const results = lapidary.parseQuery('name:=:"My Derpy Turtle" NOT edition:=:2')
+      expect(results).toEqual([MDT_1ST])
+    }),
+    it('Handles nested negation with implicit AND and parentheses', () => {
+      const lapidary = new Lapidary(items, facets, options)
+      const results = lapidary.parseQuery('name:=:"My Derpy Turtle" NOT (edition:=:2)')
+      expect(results).toEqual([MDT_1ST])
+    }),
+    it('Handles negation with abstract queries', () => {
+      const lapidary = new Lapidary([WP_1ST, HP_1ST, WP_1ST], facets, options)
+      const results = lapidary.parseQuery(`NOT is::duplicate`)
+      expect(results).toEqual([HP_1ST])
+    })
+})

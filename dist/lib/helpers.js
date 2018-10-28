@@ -5,6 +5,7 @@ var utilities_1 = require("./utilities");
 var operations_1 = require("./operations");
 var EXPRESSION_REGEX = /.+:.*:/gi;
 // const EXPRESSION_REGEX = /.+:.*:.+/gi
+var alwaysTrueFilterEvaluator = function (item, l) { return true; };
 var isInterpretable = function (str) {
     /* Currently unused because of recursivelySplitString
     if (str.startsWith('(') && str.endsWith(')')) {
@@ -76,12 +77,12 @@ exports.traverseEvaluationTree = function (item, evalutionTree, l) {
         return evalutionTree.filterEvaluator(item, l);
     }
     var tree = evalutionTree;
-    // TODO: This is kinda messy.... And I'm not even sure the last case is necessary
+    // TODO: This is kinda messy.... And I'm not even sure the last case is necessary  
     if (tree.left && tree.right) {
         if (tree.joinType === constants_1.AND) {
-            return (exports.traverseEvaluationTree(item, tree.left, l) && exports.traverseEvaluationTree(item, tree.right, l));
+            return (exports.traverseEvaluationTree(item, tree.left, l) && (!tree.invert === exports.traverseEvaluationTree(item, tree.right, l)));
         }
-        return exports.traverseEvaluationTree(item, tree.left, l) || exports.traverseEvaluationTree(item, tree.right, l);
+        return exports.traverseEvaluationTree(item, tree.left, l) || (!tree.invert === exports.traverseEvaluationTree(item, tree.right, l));
     }
     return exports.traverseEvaluationTree(item, tree.left, l);
 };
@@ -90,38 +91,52 @@ exports.recursivelyGenerateEvaluators = function (split, facets) {
         if (split.length < 1) {
             throw new Error('Invalid syntax');
         }
-        // Case like (foo:=:bar) which will become ["foo:=bar"]
+        // Special case for when the query string starts with NOT. e.g. "NOT (is::duplicate)"
+        if (split[0] === constants_1.NOT && split[1]) {
+            return {
+                left: { filterEvaluator: alwaysTrueFilterEvaluator, raw: "" },
+                joinType: constants_1.AND,
+                invert: true,
+                right: exports.recursivelyGenerateEvaluators(split[1], facets)
+            };
+        }
+        // Case like (foo:=:bar) which will become ["foo:=:bar"]
         if (split.length === 1) {
             return {
                 left: exports.recursivelyGenerateEvaluators(split[0], facets),
                 joinType: null,
+                invert: false,
                 right: null
             };
         }
         // Explicit join type
         if (split[1] === constants_1.OR || split[1] === constants_1.AND) {
+            var inverted_1 = split[2] && split[2] === constants_1.NOT;
             return {
                 left: exports.recursivelyGenerateEvaluators(split[0], facets),
                 joinType: split[1],
-                right: exports.recursivelyGenerateEvaluators(split.slice(2), facets)
+                invert: inverted_1,
+                right: exports.recursivelyGenerateEvaluators(split.slice(inverted_1 ? 3 : 2), facets)
             };
         }
         // Implicit "AND" join type
+        var inverted = split[1] && split[1] === constants_1.NOT;
         return {
             left: exports.recursivelyGenerateEvaluators(split[0], facets),
             joinType: constants_1.AND,
-            right: exports.recursivelyGenerateEvaluators(split.slice(1), facets)
+            invert: inverted,
+            right: exports.recursivelyGenerateEvaluators(split.slice(inverted ? 2 : 1), facets)
         };
     }
     // String as EvaluationLeaf
     return {
-        filterEvaluator: predicateToFilterEvaluator(split, facets)
+        filterEvaluator: predicateToFilterEvaluator(split, facets),
+        raw: split
     };
 };
 var generateEvaluationTree = function (input, facets) {
     // Replace instances of multiple spaces with a single space
     var squashedInput = input.replace(/\s\s+/g, ' ').trim();
-    //  console.log('>>>>>>>>>>>> HELLO')
     var split = recursivelySplitString(squashedInput, 0);
     var evaluationTree = exports.recursivelyGenerateEvaluators(split, facets);
     return evaluationTree;

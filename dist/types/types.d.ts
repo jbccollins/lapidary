@@ -12,10 +12,12 @@ export declare type Facet = {
 export declare type EvaluationTree = {
     left: EvaluationTree | EvaluationTreeLeaf | null;
     right: EvaluationTree | EvaluationTreeLeaf | null;
+    invert: boolean;
     joinType: string | null;
 };
 export declare type EvaluationTreeLeaf = {
     filterEvaluator: FilterEvaluator;
+    raw: string;
 };
 export declare type Item = {
     [k in keyof Facets]: any;

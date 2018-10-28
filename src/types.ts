@@ -13,11 +13,13 @@ export type Facet = {
 export type EvaluationTree = {
   left: EvaluationTree | EvaluationTreeLeaf | null
   right: EvaluationTree | EvaluationTreeLeaf | null
+  invert: boolean // Should the bool returned by the RHS of the evaluation tree be negated?
   joinType: string | null
 }
 
 export type EvaluationTreeLeaf = {
   filterEvaluator: FilterEvaluator
+  raw: string // Unused by lapidary directly. But useful for parsing out the evaluation tree to generate SQL.
 }
 
 export type Item = { [k in keyof Facets]: any }

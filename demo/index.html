@@ -34,7 +34,7 @@
 				}
 				l.setInPermanentContext([DUPLICATE], duplicateContext)
 				}
-				return l.getInPermanentContext([DUPLICATE, item.firstName + item.lastName])
+				return l.getInPermanentContext([DUPLICATE, item.firstName + item.lastName]) === true
 			}
 
 			const ExistentialComparator = (expression, item, l) => {

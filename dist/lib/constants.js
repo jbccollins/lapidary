@@ -48,6 +48,8 @@ var AND = 'AND';
 exports.AND = AND;
 var OR = 'OR';
 exports.OR = OR;
+var NOT = 'NOT';
+exports.NOT = NOT;
 var JOINS = [AND, OR];
 exports.JOINS = JOINS;
 /* SUGGESTION REGEX */
