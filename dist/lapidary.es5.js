@@ -240,8 +240,8 @@ var parenthesesAreBalanced = function (s) {
     return stack.length === 0;
 };
 
-var EXPRESSION_REGEX = /.+:.*:/gi;
-// const EXPRESSION_REGEX = /.+:.*:.+/gi
+var FILTER_STRING_REGEX = /.+:.*:/gi;
+// const FILTER_STRING_REGEX = /.+:.*:.+/gi
 var alwaysTrueFilterEvaluator = function (item, l) { return true; };
 var isInterpretable = function (str) {
     /* Currently unused because of recursivelySplitString
@@ -252,7 +252,7 @@ var isInterpretable = function (str) {
       return true
     }
     */
-    if (str.match(EXPRESSION_REGEX)) {
+    if (str.match(FILTER_STRING_REGEX)) {
         return true;
     }
     return false;
@@ -282,28 +282,28 @@ var recursivelySplitString = function (input, depth) {
     }
     return split.map(function (s) { return recursivelySplitString(s, depth + 1); });
 };
-var predicateToFilterEvaluator = function (predicate, facets) {
-    var _a = predicate.split(':'), key = _a[0], operation = _a[1], expression = _a[2];
+var stringToFilterEvaluator = function (filterString, facets) {
+    var _a = filterString.split(':'), key = _a[0], operation = _a[1], parameters = _a[2];
     var facetKey = key;
     // Handle raw queries that don't match lapidary syntax
-    if (!isInterpretable(predicate)) {
-        return DefaultEvaluationGenerator(facetKey, expression);
+    if (!isInterpretable(filterString)) {
+        return DefaultEvaluationGenerator(facetKey, parameters);
     }
-    if (expression && facetKey) {
+    if (parameters && facetKey) {
         if (!facets[facetKey]) {
-            throw new Error("Invalid facet key: \"" + facetKey + "\". Unable to interpret \"" + predicate + "\"");
+            throw new Error("Invalid facet key: \"" + facetKey + "\". Unable to interpret \"" + filterString + "\"");
         }
     }
     /*// If the regex is ever switched back to /.+:.*:.+/gi this will probably need to be re-enabled
     if (!facets[facetKey]) {
-      throw new Error(`Invalid facet ${facetKey}. Unable to interpret "${predicate}"`)
+      throw new Error(`Invalid facet ${facetKey}. Unable to interpret "${filterString}"`)
     }
     */
     var filterGenerator = facets[facetKey].operations[operation];
     if (!filterGenerator) {
         throw new Error("Invalid operation " + operation + " for " + facetKey);
     }
-    return filterGenerator(facetKey, expression);
+    return filterGenerator(facetKey, parameters);
 };
 var traverseEvaluationTree = function (item, evalutionTree, l) {
     if (!evalutionTree) {
@@ -314,12 +314,14 @@ var traverseEvaluationTree = function (item, evalutionTree, l) {
         return evalutionTree.filterEvaluator(item, l);
     }
     var tree = evalutionTree;
-    // TODO: This is kinda messy.... And I'm not even sure the last case is necessary  
+    // TODO: This is kinda messy.... And I'm not even sure the last case is necessary
     if (tree.left && tree.right) {
         if (tree.joinType === AND) {
-            return (traverseEvaluationTree(item, tree.left, l) && (!tree.invert === traverseEvaluationTree(item, tree.right, l)));
+            return (traverseEvaluationTree(item, tree.left, l) &&
+                !tree.invert === traverseEvaluationTree(item, tree.right, l));
         }
-        return traverseEvaluationTree(item, tree.left, l) || (!tree.invert === traverseEvaluationTree(item, tree.right, l));
+        return (traverseEvaluationTree(item, tree.left, l) ||
+            !tree.invert === traverseEvaluationTree(item, tree.right, l));
     }
     return traverseEvaluationTree(item, tree.left, l);
 };
@@ -331,7 +333,7 @@ var recursivelyGenerateEvaluators = function (split, facets) {
         // Special case for when the query string starts with NOT. e.g. "NOT (is::duplicate)"
         if (split[0] === NOT && split[1]) {
             return {
-                left: { filterEvaluator: alwaysTrueFilterEvaluator, raw: "" },
+                left: { filterEvaluator: alwaysTrueFilterEvaluator, raw: '' },
                 joinType: AND,
                 invert: true,
                 right: recursivelyGenerateEvaluators(split[1], facets)
@@ -367,7 +369,7 @@ var recursivelyGenerateEvaluators = function (split, facets) {
     }
     // String as EvaluationLeaf
     return {
-        filterEvaluator: predicateToFilterEvaluator(split, facets),
+        filterEvaluator: stringToFilterEvaluator(split, facets),
         raw: split
     };
 };

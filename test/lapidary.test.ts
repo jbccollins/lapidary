@@ -9,7 +9,7 @@ import { traverseEvaluationTree, recursivelyGenerateEvaluators } from '../src/he
 const DUPLICATE = 'duplicate'
 const DUPE = 'dupe'
 const TRANSIENT_DUPLICATE = 'transdupe'
-const isDuplicate = (expression: string, item: Item, l: Lapidary): boolean => {
+const isDuplicate = (filterString: string, item: Item, l: Lapidary): boolean => {
   if (!l.getInPermanentContext([DUPLICATE])) {
     let name = ''
     const duplicateContext: { [key: string]: any } = {}
@@ -31,7 +31,7 @@ const isDuplicate = (expression: string, item: Item, l: Lapidary): boolean => {
   return l.getInPermanentContext([DUPLICATE, item.name]) === true
 }
 
-const isTransientDuplicate = (expression: string, item: Item, l: Lapidary): boolean => {
+const isTransientDuplicate = (filterString: string, item: Item, l: Lapidary): boolean => {
   if (!l.getInTransientContext([DUPLICATE])) {
     let name = ''
     const duplicateContext: { [key: string]: any } = {}
@@ -52,26 +52,26 @@ const isTransientDuplicate = (expression: string, item: Item, l: Lapidary): bool
   }
   return l.getInTransientContext([DUPLICATE, item.name]) === true
 }
-const ExistentialComparator: ImplicitComparator = (expression: string, item: Item, l: Lapidary) => {
-  switch (expression) {
+const ExistentialComparator: ImplicitComparator = (parameters: string, item: Item, l: Lapidary) => {
+  switch (parameters) {
     case DUPLICATE:
     case DUPE:
-      return isDuplicate(expression, item, l)
+      return isDuplicate(parameters, item, l)
     case TRANSIENT_DUPLICATE:
-      return isTransientDuplicate(expression, item, l)
+      return isTransientDuplicate(parameters, item, l)
     default:
-      throw new Error(`Invalid expression "${expression}" given to ExistentialComparator "is"`)
+      throw new Error(`Invalid parameters "${parameters}" given to ExistentialComparator "is"`)
   }
 }
 
 const ImplicitEvaluationGenerator: FilterGenerator = (
   facetKey: keyof Facets,
-  expression: string
+  filterString: string
 ): FilterEvaluator => {
   return (item: Item, l: Lapidary) => {
     switch (facetKey) {
       case IS:
-        return ExistentialComparator(expression, item, l)
+        return ExistentialComparator(filterString, item, l)
       default:
         throw new Error('Unknown usage of ImplicitEvaluationGenerator')
     }
@@ -334,7 +334,7 @@ describe('Abstract Queries', () => {
     it('Fails given invalid existential usage', () => {
       const lapidary = new Lapidary(items, facets, options)
       expect(() => lapidary.parseQuery(`is::derp`)).toThrow(
-        `Invalid expression "derp" given to ExistentialComparator "is"`
+        `Invalid parameters "derp" given to ExistentialComparator "is"`
       )
     })
 })

@@ -11,8 +11,8 @@ import { AND, OR, NOT } from './constants'
 import { splitBalanced, parenthesesAreBalanced } from './utilities'
 import { DefaultEvaluationGenerator } from './operations'
 
-const EXPRESSION_REGEX = /.+:.*:/gi
-// const EXPRESSION_REGEX = /.+:.*:.+/gi
+const FILTER_STRING_REGEX = /.+:.*:/gi
+// const FILTER_STRING_REGEX = /.+:.*:.+/gi
 
 const alwaysTrueFilterEvaluator: FilterEvaluator = (item: Item, l: Lapidary) => true
 
@@ -25,7 +25,7 @@ const isInterpretable = (str: string) => {
     return true
   }
   */
-  if (str.match(EXPRESSION_REGEX)) {
+  if (str.match(FILTER_STRING_REGEX)) {
     return true
   }
   return false
@@ -58,24 +58,24 @@ const recursivelySplitString = (input: string, depth: number): any => {
   return split.map(s => recursivelySplitString(s, depth + 1))
 }
 
-const predicateToFilterEvaluator = (predicate: string, facets: Facets): FilterEvaluator => {
-  const [key, operation, expression] = predicate.split(':')
+const stringToFilterEvaluator = (filterString: string, facets: Facets): FilterEvaluator => {
+  const [key, operation, parameters] = filterString.split(':')
   const facetKey = key as keyof Facets
 
   // Handle raw queries that don't match lapidary syntax
-  if (!isInterpretable(predicate)) {
-    return DefaultEvaluationGenerator(facetKey, expression)
+  if (!isInterpretable(filterString)) {
+    return DefaultEvaluationGenerator(facetKey, parameters)
   }
 
-  if (expression && facetKey) {
+  if (parameters && facetKey) {
     if (!facets[facetKey]) {
-      throw new Error(`Invalid facet key: "${facetKey}". Unable to interpret "${predicate}"`)
+      throw new Error(`Invalid facet key: "${facetKey}". Unable to interpret "${filterString}"`)
     }
   }
 
   /*// If the regex is ever switched back to /.+:.*:.+/gi this will probably need to be re-enabled
   if (!facets[facetKey]) {
-    throw new Error(`Invalid facet ${facetKey}. Unable to interpret "${predicate}"`)
+    throw new Error(`Invalid facet ${facetKey}. Unable to interpret "${filterString}"`)
   }
   */
 
@@ -85,7 +85,7 @@ const predicateToFilterEvaluator = (predicate: string, facets: Facets): FilterEv
     throw new Error(`Invalid operation ${operation} for ${facetKey}`)
   }
 
-  return filterGenerator(facetKey, expression)
+  return filterGenerator(facetKey, parameters)
 }
 
 export const traverseEvaluationTree = (
@@ -165,7 +165,7 @@ export const recursivelyGenerateEvaluators = (
   }
   // String as EvaluationLeaf
   return {
-    filterEvaluator: predicateToFilterEvaluator(split, facets),
+    filterEvaluator: stringToFilterEvaluator(split, facets),
     raw: split
   }
 }

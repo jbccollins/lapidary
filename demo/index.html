@@ -15,7 +15,7 @@
 			const DUPLICATE = 'duplicate'
 			const DUPE = 'dupe'
 
-			const isDuplicate = (expression, item, l) => {
+			const isDuplicate = (parameters, item, l) => {
 				if (!l.getInPermanentContext([DUPLICATE])) {
 				let name = ""
 				const duplicateContext = {}
@@ -37,21 +37,21 @@
 				return l.getInPermanentContext([DUPLICATE, item.firstName + item.lastName]) === true
 			}
 
-			const ExistentialComparator = (expression, item, l) => {
-				switch (expression) {
+			const ExistentialComparator = (parameters, item, l) => {
+				switch (parameters) {
 					case DUPLICATE:
 					case DUPE:
-					return isDuplicate(expression, item, l)
+					return isDuplicate(parameters, item, l)
 					default:
-					throw new Error(`Invalid expression "${expression}" given to ExistentialComparator "is"`)
+					throw new Error(`Invalid parameters "${parameters}" given to ExistentialComparator "is"`)
 				}
 			}
 
-			const ImplicitEvaluationGenerator = (facetKey, expression) => {
+			const ImplicitEvaluationGenerator = (facetKey, parameters) => {
 				return (item, l) => {
 					switch (facetKey) {
 						case "is":
-						return ExistentialComparator(expression, item, l)
+						return ExistentialComparator(parameters, item, l)
 						default:
 						throw new Error('Unknown usage of ImplicitEvaluationGenerator')
 					}

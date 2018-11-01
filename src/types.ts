@@ -1,7 +1,7 @@
 import Lapidary from './lapidary'
 /*** TYPES ***/
 export type FilterEvaluator = (item: Item, l: Lapidary) => boolean
-export type FilterGenerator = (facetKey: keyof Facets, expression: any) => FilterEvaluator
+export type FilterGenerator = (facetKey: keyof Facets, parameters: any) => FilterEvaluator
 export type Facets = {
   [key: string]: Facet
 }
@@ -24,7 +24,7 @@ export type EvaluationTreeLeaf = {
 
 export type Item = { [k in keyof Facets]: any }
 
-export type ImplicitComparator = (expression: string, item: Item, l: Lapidary) => boolean
+export type ImplicitComparator = (parameters: string, item: Item, l: Lapidary) => boolean
 
 /*** END TYPES ***/
 
