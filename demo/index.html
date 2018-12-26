@@ -24,9 +24,9 @@
 					if (duplicateContext[name]) {
 					continue;
 					}
-					if (i < items.length){
+					if (i < l.items.length){
 					for (let j = i + 1; j < l.items.length; j++) {
-						if (items[j].firstName + items[j].lastName == name) {
+						if (l.items[j].firstName + l.items[j].lastName == name) {
 						duplicateContext[name] = true;
 						}
 					}
