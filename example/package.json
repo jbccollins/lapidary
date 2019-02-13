@@ -1,27 +1,31 @@
-
 {
-    "name": "lapidary-example",
-    "homepage": "https://jbccollins.github.io/lapidary",
-    "version": "0.0.0",
-    "license": "MIT",
-    "private": true,
-    "dependencies": {
-      "prop-types": "^15.6.2",
-      "react": "^16.4.1",
-      "react-ace": "^6.2.0",
-      "react-dom": "^16.4.1",
-      "lapidary": "link:..",
-      "react-scripts": "^1.1.4"
-    },
-    "scripts": {
-      "start": "react-scripts --max-old-space-size=8192 --optimize-for-size --max_old_space_size=8192 --optimize_for_size start",
-      "build": "react-scripts build",
-      "test": "react-scripts test --env=jsdom",
-      "eject": "react-scripts eject",
-      "predeploy": "npm run build",
-      "deploy": "gh-pages -d build"
-    },
-    "devDependencies": {
-      "gh-pages": "^2.0.1"
-    }
+  "name": "lapidary-example",
+  "homepage": "https://jbccollins.github.io/lapidary",
+  "version": "0.0.0",
+  "license": "MIT",
+  "private": true,
+  "dependencies": {
+    "@material-ui/core": "^3.9.2",
+    "@material-ui/icons": "^3.0.2",
+    "classnames": "^2.2.6",
+    "fuse.js": "^3.4.2",
+    "lapidary": "link:..",
+    "prop-types": "^15.6.2",
+    "react": "^16.4.1",
+    "react-ace": "^6.2.0",
+    "react-d3-tree": "^1.12.2",
+    "react-dom": "^16.4.1",
+    "react-scripts": "^1.1.4"
+  },
+  "scripts": {
+    "start": "react-scripts --max-old-space-size=8192 --optimize-for-size --max_old_space_size=8192 --optimize_for_size start",
+    "build": "react-scripts build",
+    "test": "react-scripts test --env=jsdom",
+    "eject": "react-scripts eject",
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d build"
+  },
+  "devDependencies": {
+    "gh-pages": "^2.0.1"
   }
+}

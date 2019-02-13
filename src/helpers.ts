@@ -67,10 +67,8 @@ const stringToFilterEvaluator = (filterString: string, facets: Facets): FilterEv
     return DefaultEvaluationGenerator(facetKey, parameters)
   }
 
-  if (parameters && facetKey) {
-    if (!facets[facetKey]) {
-      throw new Error(`Invalid facet key: "${facetKey}". Unable to interpret "${filterString}"`)
-    }
+  if (!facetKey || !facets[facetKey]) {
+    throw new Error(`Invalid facet key: "${facetKey}". Unable to interpret "${filterString}"`)
   }
 
   /*// If the regex is ever switched back to /.+:.*:.+/gi this will probably need to be re-enabled
@@ -82,7 +80,7 @@ const stringToFilterEvaluator = (filterString: string, facets: Facets): FilterEv
   const filterGenerator: FilterGenerator = facets[facetKey].operations[operation]
 
   if (!filterGenerator) {
-    throw new Error(`Invalid operation ${operation} for ${facetKey}`)
+    throw new Error(`Invalid operation "${operation}" for "${facetKey}"`)
   }
 
   return filterGenerator(facetKey, parameters)
@@ -137,12 +135,7 @@ export const recursivelyGenerateEvaluators = (
     }
     // Case like (foo:=:bar) which will become ["foo:=:bar"]
     if (split.length === 1) {
-      return {
-        left: recursivelyGenerateEvaluators(split[0], facets),
-        joinType: null,
-        invert: false,
-        right: null
-      }
+      return recursivelyGenerateEvaluators(split[0], facets)
     }
     // Explicit join type
     if (split[1] === OR || split[1] === AND) {

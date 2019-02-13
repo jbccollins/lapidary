@@ -5,7 +5,7 @@ var constants_1 = require("./constants");
 // String quotes when doing string operations
 var cleanString = function (s, facetKey) {
     if (typeof s === 'undefined' || s === '') {
-        throw new Error("Expected a value for " + facetKey);
+        throw new Error("Expected a value for \"" + facetKey + "\"");
     }
     return s.replace(/['"]+/g, '');
 };
@@ -13,7 +13,7 @@ var cleanString = function (s, facetKey) {
 var cleanNumber = function (n, facetKey) {
     var num = Number(n);
     if (isNaN(num)) {
-        throw new Error("Expected a numeric value for " + facetKey + ". Received \"" + n + "\"");
+        throw new Error("Expected a numeric value for \"" + facetKey + "\". Received \"" + n + "\"");
     }
     return num;
 };

@@ -4,3 +4,8 @@ body {
     padding: 0;
     font-family: sans-serif;
 }
+
+.link {
+    stroke: black;
+    fill: none;
+}

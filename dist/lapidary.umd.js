@@ -22,12 +22,13 @@
   var NOT = 'NOT';
   /* SUGGESTION REGEX */
   var FACET_SUGGESTION_REGEX = /\w+/gi;
+  //# sourceMappingURL=constants.js.map
 
   var _a, _b;
   // String quotes when doing string operations
   var cleanString = function (s, facetKey) {
       if (typeof s === 'undefined' || s === '') {
-          throw new Error("Expected a value for " + facetKey);
+          throw new Error("Expected a value for \"" + facetKey + "\"");
       }
       return s.replace(/['"]+/g, '');
   };
@@ -35,7 +36,7 @@
   var cleanNumber = function (n, facetKey) {
       var num = Number(n);
       if (isNaN(num)) {
-          throw new Error("Expected a numeric value for " + facetKey + ". Received \"" + n + "\"");
+          throw new Error("Expected a numeric value for \"" + facetKey + "\". Received \"" + n + "\"");
       }
       return num;
   };
@@ -141,6 +142,7 @@
       _b[BETWEEN] = NumericBetweenEvaluationGenerator,
       _b[INCLUSIVE_BETWEEN] = NumericInclusiveBetweenEvaluationGenerator,
       _b);
+  //# sourceMappingURL=operations.js.map
 
   // https://gist.github.com/scottrippey/1349099
   var splitBalanced = function (input, 
@@ -245,6 +247,7 @@
       }
       return stack.length === 0;
   };
+  //# sourceMappingURL=utilities.js.map
 
   var FILTER_STRING_REGEX = /.+:.*:/gi;
   // const FILTER_STRING_REGEX = /.+:.*:.+/gi
@@ -295,10 +298,8 @@
       if (!isInterpretable(filterString)) {
           return DefaultEvaluationGenerator(facetKey, parameters);
       }
-      if (parameters && facetKey) {
-          if (!facets[facetKey]) {
-              throw new Error("Invalid facet key: \"" + facetKey + "\". Unable to interpret \"" + filterString + "\"");
-          }
+      if (!facetKey || !facets[facetKey]) {
+          throw new Error("Invalid facet key: \"" + facetKey + "\". Unable to interpret \"" + filterString + "\"");
       }
       /*// If the regex is ever switched back to /.+:.*:.+/gi this will probably need to be re-enabled
       if (!facets[facetKey]) {
@@ -307,7 +308,7 @@
       */
       var filterGenerator = facets[facetKey].operations[operation];
       if (!filterGenerator) {
-          throw new Error("Invalid operation " + operation + " for " + facetKey);
+          throw new Error("Invalid operation \"" + operation + "\" for \"" + facetKey + "\"");
       }
       return filterGenerator(facetKey, parameters);
   };
@@ -347,12 +348,7 @@
           }
           // Case like (foo:=:bar) which will become ["foo:=:bar"]
           if (split.length === 1) {
-              return {
-                  left: recursivelyGenerateEvaluators(split[0], facets),
-                  joinType: null,
-                  invert: false,
-                  right: null
-              };
+              return recursivelyGenerateEvaluators(split[0], facets);
           }
           // Explicit join type
           if (split[1] === OR || split[1] === AND) {
@@ -411,18 +407,22 @@
               return setIn(_this.permanentContext, keyPath, value);
           };
           this.getInPermanentContext = function (keyPath) { return getIn(_this.permanentContext, keyPath); };
-          this.parseQuery = function (query) {
+          this.getEvaluationTree = function (query) { return generateEvaluationTree(query, _this.facets); };
+          this.parseEvaluationTree = function (evalutionTree) {
               // Reset transient context before each run
               _this.clearTransientContext();
-              if (query.trim() === '') {
-                  return _this.items;
-              }
-              var evalutionTree = generateEvaluationTree(query, _this.facets);
               var result = _this.items.filter(function (item, index) {
                   _this.setCurrentIndex(index);
                   return traverseEvaluationTree(item, evalutionTree, _this);
               });
               return result;
+          };
+          this.parseQuery = function (query) {
+              if (query.trim() === '') {
+                  return _this.items;
+              }
+              var evalutionTree = generateEvaluationTree(query, _this.facets);
+              return _this.parseEvaluationTree(evalutionTree);
           };
           /*
             CASES:
@@ -449,6 +449,7 @@
       }
       return Lapidary;
   }());
+  //# sourceMappingURL=lapidary.js.map
 
   exports.default = Lapidary;
   exports.StringOperations = StringOperations;

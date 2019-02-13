@@ -14,7 +14,7 @@ export type EvaluationTree = {
   left: EvaluationTree | EvaluationTreeLeaf | null
   right: EvaluationTree | EvaluationTreeLeaf | null
   invert: boolean // Should the bool returned by the RHS of the evaluation tree be negated?
-  joinType: string | null
+  joinType: string
 }
 
 export type EvaluationTreeLeaf = {

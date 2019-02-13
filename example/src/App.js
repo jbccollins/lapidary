@@ -1,14 +1,32 @@
+/*
+TODO: this is buggy. Check the chart:
+
+`
+NOT (first:=:2 OR first:=:3) AND first:=:"My Derpy Turtle" AND NOT age:>=:10
+`
+*/
+
 import React, { Component } from 'react';
-import lapidary from 'lapidary';
-import './people';
+//import Fuse from 'fuse.js';
+import { Lapidary, StringOperations, NumericOperations } from 'lapidary';
+//import './people';
+import './peoplesmall';
 import { defaultFacet, ImplicitEvaluationGenerator } from './lapidary-helpers';
+import PeopleTable from './PeopleTable';
+import LapidaryTree from './LapidaryTree';
+import ShowChartIcon from '@material-ui/icons/ShowChart';
+import Button from '@material-ui/core/Button';
+import Dialog from '@material-ui/core/Dialog';
+import DialogActions from '@material-ui/core/DialogActions';
+import DialogContent from '@material-ui/core/DialogContent';
+import DialogTitle from '@material-ui/core/DialogTitle';
 
 const FIRST_NAME_FACET = {
-  operations: lapidary.StringOperations,
+  operations: StringOperations,
   objectKey: 'firstName'
 };
 const LAST_NAME_FACET = {
-  operations: lapidary.StringOperations,
+  operations: StringOperations,
   objectKey: 'lastName'
 };
 
@@ -26,15 +44,15 @@ const facets = {
   lastName: LAST_NAME_FACET,
   last: LAST_NAME_FACET,
   balance: {
-    operations: lapidary.NumericOperations,
+    operations: NumericOperations,
     objectKey: 'balance'
   },
   age: {
-    operations: lapidary.NumericOperations,
+    operations: NumericOperations,
     objectKey: 'age'
   },
   gender: {
-    operations: lapidary.StringOperations,
+    operations: StringOperations,
     objectKey: 'gender'
   },
   is: {
@@ -48,16 +66,77 @@ const facets = {
 export default class App extends Component {
   state = {
     ready: false,
+    data: [],
+    error: false,
+    evaluationTree: null,
+    showChart: false,
   };
-  componentDidMount() {
-    this.l = new lapidary(window.people, facets, {defaultSuggestion: "Try first:=:James OR last:=:Collins", defaultFacet: defaultFacet });
-    this.setState({ready: true});
+
+  handleFilterChange = (e) => {
+    try {
+      console.log(this.lapidary.getEvaluationTree(e.target.value));
+      this.setState({
+        data: this.lapidary.parseQuery(e.target.value),
+        error: false,
+        evaluationTree: this.lapidary.getEvaluationTree(e.target.value)
+      });
+    } catch(e) {
+      this.setState({data: this.lapidary.items, error: e.message, evaluationTree: null})
+    }
   }
+
+  componentDidMount() {
+    // var options = {
+    //   keys: ['firstName', 'lastName'],
+    //   id: '_id'
+    // }
+    // this.fuse = new Fuse(window.people, options)
+    this.lapidary = new Lapidary(window.people, facets, {defaultSuggestion: "Try first:=:James OR last:=:Collins", defaultFacet: defaultFacet });
+    this.setState({ready: true, data: this.lapidary.items});
+  }
+
+  handleShowChart = () => {
+    console.log('click')
+    this.setState({showChart: true});
+  }
+
+  handleHideChart = () => {
+    this.setState({showChart: false});
+  }
+
   render () {
-    console.log(this.l);
+    const { ready, data, error, evaluationTree, showChart } = this.state;
+    console.log(showChart);
     return (
       <div className='app'>
-        it works i guess
+        {ready &&
+          <div>
+            <Button variant="contained" color="secondary" onClick={this.handleShowChart}>
+              Show Chart
+              <ShowChartIcon />
+            </Button>
+            
+            <PeopleTable error={error} data={data} onFilterChange={this.handleFilterChange}/>
+          {showChart &&
+            <Dialog
+              open={showChart}
+              onClose={this.handleClose}
+              aria-labelledby="alert-dialog-title"
+              aria-describedby="alert-dialog-description"
+            >
+              <DialogTitle id="alert-dialog-title">Chart View</DialogTitle>
+              <DialogContent>
+                <LapidaryTree evaluationTree={evaluationTree}/>
+              </DialogContent>
+              <DialogActions>
+                <Button onClick={this.handleHideChart} color="primary">
+                  close
+                </Button>
+              </DialogActions>
+            </Dialog>
+          }
+          </div>
+        }
       </div>
     )
   }

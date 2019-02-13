@@ -20,7 +20,7 @@ import {
 // String quotes when doing string operations
 const cleanString = (s: string | undefined, facetKey: string | number) => {
   if (typeof s === 'undefined' || s === '') {
-    throw new Error(`Expected a value for ${facetKey}`)
+    throw new Error(`Expected a value for "${facetKey}"`)
   }
   return s.replace(/['"]+/g, '')
 }
@@ -28,7 +28,7 @@ const cleanString = (s: string | undefined, facetKey: string | number) => {
 const cleanNumber = (n: string, facetKey: string | number) => {
   const num = Number(n)
   if (isNaN(num)) {
-    throw new Error(`Expected a numeric value for ${facetKey}. Received "${n}"`)
+    throw new Error(`Expected a numeric value for "${facetKey}". Received "${n}"`)
   }
   return num
 }

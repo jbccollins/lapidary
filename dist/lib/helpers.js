@@ -52,10 +52,8 @@ var stringToFilterEvaluator = function (filterString, facets) {
     if (!isInterpretable(filterString)) {
         return operations_1.DefaultEvaluationGenerator(facetKey, parameters);
     }
-    if (parameters && facetKey) {
-        if (!facets[facetKey]) {
-            throw new Error("Invalid facet key: \"" + facetKey + "\". Unable to interpret \"" + filterString + "\"");
-        }
+    if (!facetKey || !facets[facetKey]) {
+        throw new Error("Invalid facet key: \"" + facetKey + "\". Unable to interpret \"" + filterString + "\"");
     }
     /*// If the regex is ever switched back to /.+:.*:.+/gi this will probably need to be re-enabled
     if (!facets[facetKey]) {
@@ -64,7 +62,7 @@ var stringToFilterEvaluator = function (filterString, facets) {
     */
     var filterGenerator = facets[facetKey].operations[operation];
     if (!filterGenerator) {
-        throw new Error("Invalid operation " + operation + " for " + facetKey);
+        throw new Error("Invalid operation \"" + operation + "\" for \"" + facetKey + "\"");
     }
     return filterGenerator(facetKey, parameters);
 };

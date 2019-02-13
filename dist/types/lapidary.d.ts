@@ -1,5 +1,5 @@
 import { StringOperations, NumericOperations } from './operations';
-import { Item, Facets, Facet } from './types';
+import { EvaluationTree, EvaluationTreeLeaf, Item, Facets, Facet } from './types';
 export default class Lapidary {
     items: Item[];
     facets: Facets;
@@ -10,7 +10,9 @@ export default class Lapidary {
     getInTransientContext: (keyPath: string[]) => any;
     setInPermanentContext: (keyPath: string[], value: any) => void;
     getInPermanentContext: (keyPath: string[]) => any;
+    getEvaluationTree: (query: string) => EvaluationTree | EvaluationTreeLeaf;
     parseQuery: (query: string) => Item[];
+    parseEvaluationTree: (evalutionTree: EvaluationTree | EvaluationTreeLeaf) => Item[];
     getSuggestions: (query: string, position: number) => string[];
     defaultFacet: (i: Item, s: string | number) => boolean;
     defaultSuggestion: string;

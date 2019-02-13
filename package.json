@@ -64,6 +64,8 @@
       "/node_modules/",
       "/test/",
       "/demo/",
+      "/example/",
+      "/dist/",
       "utilities.ts"
     ],
     "coverageThreshold": {

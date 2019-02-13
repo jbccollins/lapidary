@@ -171,13 +171,13 @@ describe('Generic Malformed Queries', () => {
     it('Fails given invalid operation', () => {
       const lapidary = new Lapidary(items, facets, options)
       expect(() => lapidary.parseQuery('name:DERPS:"War and Peace"')).toThrow(
-        `Invalid operation DERPS for name`
+        `Invalid operation "DERPS" for "name"`
       )
     }),
     // This is now interpreted as a raw query since it doesn't match the regex
     it('Fails given empty right hand side', () => {
       const lapidary = new Lapidary(items, facets, options)
-      expect(() => lapidary.parseQuery('name:=:')).toThrow(`Expected a value for name`)
+      expect(() => lapidary.parseQuery('name:=:')).toThrow(`Expected a value for "name"`)
     })
 })
 
@@ -218,7 +218,7 @@ describe('Numeric Queries', () => {
   it('Fails on NaN', () => {
     const lapidary = new Lapidary(items, facets, options)
     expect(() => lapidary.parseQuery('edition:=:LMAO')).toThrow(
-      `Expected a numeric value for edition. Received "LMAO"`
+      `Expected a numeric value for "edition". Received "LMAO"`
     )
   }),
     it('Evaluates equality', () => {
@@ -360,6 +360,11 @@ describe('Miscellaneous', () => {
     it('Fails on an empty split', () => {
       expect(() => recursivelyGenerateEvaluators([], facets)).toThrow(`Invalid syntax`)
     })
+  it('Generates an evaluation tree when asked for one', () => {
+    const lapidary = new Lapidary(items, facets, options)
+    // TODO: This is a shitty test
+    expect(lapidary.getEvaluationTree('name:=:"My Derpy Turtle" edition:=:2')).not.toBe(null)
+  })
 })
 
 describe('Suggestions', () => {
