@@ -17,15 +17,20 @@ import {
   NOT_EQUAL
 } from './constants'
 
-// String quotes when doing string operations
-const cleanString = (s: string | undefined, facetKey: string | number) => {
-  if (typeof s === 'undefined' || s === '') {
+const checkValue = (v: any, facetKey: string | number) => {
+  if (typeof v === 'undefined' || v === '') {
     throw new Error(`Expected a value for "${facetKey}"`)
   }
+}
+
+// String quotes when doing string operations
+const cleanString = (s: string, facetKey: string | number) => {
+  checkValue(s, facetKey)
   return s.replace(/['"]+/g, '')
 }
 // Interpret string value as number
 const cleanNumber = (n: string, facetKey: string | number) => {
+  checkValue(n, facetKey)
   const num = Number(n)
   if (isNaN(num)) {
     throw new Error(`Expected a numeric value for "${facetKey}". Received "${n}"`)

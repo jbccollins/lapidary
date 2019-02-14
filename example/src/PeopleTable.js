@@ -14,6 +14,8 @@ import Paper from '@material-ui/core/Paper';
 import Tooltip from '@material-ui/core/Tooltip';
 import TextField from '@material-ui/core/TextField';
 import SearchIcon from '@material-ui/icons/Search';
+import ShowChartIcon from '@material-ui/icons/ShowChart';
+import Button from '@material-ui/core/Button';
 import InputAdornment from '@material-ui/core/InputAdornment';
 import { lighten } from '@material-ui/core/styles/colorManipulator';
 
@@ -117,50 +119,63 @@ const toolbarStyles = theme => ({
   actions: {
     color: theme.palette.text.secondary,
     width: '100%',
-  },
-  title: {
-    width: '100%',
+    display: 'flex',
   },
   searchContainer: {
+    width: '100%  ',
+    flex : 1,
+  },
+  searchTextField: {
     width: '100%  ',
   },
   error: {
     color: theme.palette.error.main,
     height: '20px',
   },
+  buttonContainer: {
+    flex: 0,
+    minWidth: '152px',
+    padding: theme.spacing.unit,
+    paddingLeft: theme.spacing.unit * 2,
+    paddingRight: theme.spacing.unit * 2,
+    marginTop: '18px',
+  }
 });
 
 let EnhancedTableToolbar = props => {
-  const { classes, onFilterChange, error } = props;
+  const { classes, onFilterChange, error, onShowChart } = props;
 
   return (
     <Toolbar
       className={classes.root}
     >
-      <div className={classes.title}>
-        <Typography variant="h6" id="tableTitle">
-          Customers
-        </Typography>
-      </div>
       <div className={classes.actions}>
-        <TextField
-          className={classes.searchContainer}
-          id="outlined-search"
-          label="Find People"
-          placeholder="Try advanced filters like: first:=:James AND last:=:Collins"
-          type="search"
-          margin="normal"
-          variant="outlined"
-          onChange={onFilterChange}
-          InputProps={{
-            startAdornment: (
-              <InputAdornment position="start">
-                <SearchIcon/>
-              </InputAdornment>
-            ),
-          }}
-        />
-        <div className={classes.error}>{error ? error : ""}</div>
+        <div className={classes.searchContainer}>
+          <TextField
+            className={classes.searchTextField}
+            id="outlined-search"
+            label="Find People"
+            placeholder="Try advanced filters like: first:=:James AND last:=:Collins"
+            type="search"
+            margin="normal"
+            variant="outlined"
+            onChange={onFilterChange}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <SearchIcon/>
+                </InputAdornment>
+              ),
+            }}
+          />
+          <div className={classes.error}>{error ? error : ""}</div>
+        </div>
+        <div className={classes.buttonContainer}>
+          <Button variant="contained" color="secondary" onClick={onShowChart}>
+            Show Chart
+            <ShowChartIcon />
+          </Button>
+        </div>
       </div>
     </Toolbar>
   );
@@ -169,6 +184,7 @@ let EnhancedTableToolbar = props => {
 EnhancedTableToolbar.propTypes = {
   classes: PropTypes.object.isRequired,
   onFilterChange: PropTypes.func.isRequired,
+  onShowChart: PropTypes.func.isRequired,
   error: PropTypes.oneOfType([
     PropTypes.string,
     PropTypes.bool,
@@ -180,13 +196,16 @@ EnhancedTableToolbar = withStyles(toolbarStyles)(EnhancedTableToolbar);
 const styles = theme => ({
   root: {
     width: '100%',
-    marginTop: theme.spacing.unit * 3,
   },
   table: {
     minWidth: 1020,
   },
   tableWrapper: {
     overflowX: 'auto',
+    padding: theme.spacing.unit * 3,
+  },
+  title: {
+    padding: theme.spacing.unit * 3
   },
 });
 
@@ -219,12 +238,17 @@ class EnhancedTable extends React.Component {
   };
 
   render() {
-    const { classes, data, onFilterChange, error } = this.props;
+    const { classes, data, onFilterChange, onShowChart, error } = this.props;
     const { order, orderBy, rowsPerPage, page } = this.state;
     const emptyRows = rowsPerPage - Math.min(rowsPerPage, data.length - page * rowsPerPage);
     return (
       <Paper className={classes.root}>
-        <EnhancedTableToolbar onFilterChange={onFilterChange} error={error}/>
+        <div className={classes.title}>
+          <Typography variant="h4" id="tableTitle">
+            People
+          </Typography>
+        </div>
+        <EnhancedTableToolbar onShowChart={onShowChart} onFilterChange={onFilterChange} error={error}/>
         <div className={classes.tableWrapper}>
           <Table className={classes.table} aria-labelledby="tableTitle">
             <EnhancedTableHead
@@ -285,6 +309,7 @@ class EnhancedTable extends React.Component {
 EnhancedTable.propTypes = {
   classes: PropTypes.object.isRequired,
   onFilterChange: PropTypes.func.isRequired,
+  onShowChart: PropTypes.func.isRequired,
   error: PropTypes.oneOfType([
     PropTypes.string,
     PropTypes.bool,

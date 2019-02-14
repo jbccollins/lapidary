@@ -9,12 +9,11 @@ NOT (first:=:2 OR first:=:3) AND first:=:"My Derpy Turtle" AND NOT age:>=:10
 import React, { Component } from 'react';
 //import Fuse from 'fuse.js';
 import { Lapidary, StringOperations, NumericOperations } from 'lapidary';
-//import './people';
-import './peoplesmall';
+import './people';
+//import './peoplesmall';
 import { defaultFacet, ImplicitEvaluationGenerator } from './lapidary-helpers';
 import PeopleTable from './PeopleTable';
 import LapidaryTree from './LapidaryTree';
-import ShowChartIcon from '@material-ui/icons/ShowChart';
 import Button from '@material-ui/core/Button';
 import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
@@ -74,7 +73,6 @@ export default class App extends Component {
 
   handleFilterChange = (e) => {
     try {
-      console.log(this.lapidary.getEvaluationTree(e.target.value));
       this.setState({
         data: this.lapidary.parseQuery(e.target.value),
         error: false,
@@ -96,7 +94,7 @@ export default class App extends Component {
   }
 
   handleShowChart = () => {
-    console.log('click')
+    console.log('ha')
     this.setState({showChart: true});
   }
 
@@ -106,17 +104,11 @@ export default class App extends Component {
 
   render () {
     const { ready, data, error, evaluationTree, showChart } = this.state;
-    console.log(showChart);
     return (
       <div className='app'>
         {ready &&
           <div>
-            <Button variant="contained" color="secondary" onClick={this.handleShowChart}>
-              Show Chart
-              <ShowChartIcon />
-            </Button>
-            
-            <PeopleTable error={error} data={data} onFilterChange={this.handleFilterChange}/>
+            <PeopleTable error={error} data={data} onShowChart={this.handleShowChart} onFilterChange={this.handleFilterChange}/>
           {showChart &&
             <Dialog
               open={showChart}

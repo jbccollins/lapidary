@@ -100,20 +100,16 @@ export const traverseEvaluationTree = (
   }
   const tree = evalutionTree as EvaluationTree
 
-  // TODO: This is kinda messy.... And I'm not even sure the last case is necessary
-  if (tree.left && tree.right) {
-    if (tree.joinType === AND) {
-      return (
-        traverseEvaluationTree(item, tree.left, l) &&
-        !tree.invert === traverseEvaluationTree(item, tree.right, l)
-      )
-    }
+  if (tree.joinType === AND) {
     return (
-      traverseEvaluationTree(item, tree.left, l) ||
+      traverseEvaluationTree(item, tree.left, l) &&
       !tree.invert === traverseEvaluationTree(item, tree.right, l)
     )
   }
-  return traverseEvaluationTree(item, tree.left, l)
+  return (
+    traverseEvaluationTree(item, tree.left, l) ||
+    !tree.invert === traverseEvaluationTree(item, tree.right, l)
+  )
 }
 
 export const recursivelyGenerateEvaluators = (
@@ -125,12 +121,18 @@ export const recursivelyGenerateEvaluators = (
       throw new Error('Invalid syntax')
     }
     // Special case for when the query string starts with NOT. e.g. "NOT (is::duplicate)"
+    // TODO: Is the boolean check for && split[1] really necessary? I don't think so...
+    // TODO: This does not support leading "OR NOT" queries. Which I don't think are valid anyway given that
+    // the alwaysTrueFilterEvaluator will cause them to always be true.
+    // TODO: WTF does OR NOT do anyway??? test it!
+    // "first:=:james OR NOT last:=:collins" is the inverse of "(NOT first:=:james) AND last:=:collins"
+
     if (split[0] === NOT && split[1]) {
       return {
-        left: { filterEvaluator: alwaysTrueFilterEvaluator, raw: '' }, // Make a dummy left side that will always return true
+        left: { filterEvaluator: alwaysTrueFilterEvaluator, raw: 'TRUE' }, // Make a dummy left side that will always return true
         joinType: AND,
         invert: true,
-        right: recursivelyGenerateEvaluators(split[1], facets)
+        right: recursivelyGenerateEvaluators(split.slice(1), facets)
       }
     }
     // Case like (foo:=:bar) which will become ["foo:=:bar"]

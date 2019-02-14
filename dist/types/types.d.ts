@@ -13,7 +13,7 @@ export declare type EvaluationTree = {
     left: EvaluationTree | EvaluationTreeLeaf | null;
     right: EvaluationTree | EvaluationTreeLeaf | null;
     invert: boolean;
-    joinType: string | null;
+    joinType: string;
 };
 export declare type EvaluationTreeLeaf = {
     filterEvaluator: FilterEvaluator;

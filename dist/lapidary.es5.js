@@ -16,18 +16,21 @@ var OR = 'OR';
 var NOT = 'NOT';
 /* SUGGESTION REGEX */
 var FACET_SUGGESTION_REGEX = /\w+/gi;
-//# sourceMappingURL=constants.js.map
 
 var _a, _b;
-// String quotes when doing string operations
-var cleanString = function (s, facetKey) {
-    if (typeof s === 'undefined' || s === '') {
+var checkValue = function (v, facetKey) {
+    if (typeof v === 'undefined' || v === '') {
         throw new Error("Expected a value for \"" + facetKey + "\"");
     }
+};
+// String quotes when doing string operations
+var cleanString = function (s, facetKey) {
+    checkValue(s, facetKey);
     return s.replace(/['"]+/g, '');
 };
 // Interpret string value as number
 var cleanNumber = function (n, facetKey) {
+    checkValue(n, facetKey);
     var num = Number(n);
     if (isNaN(num)) {
         throw new Error("Expected a numeric value for \"" + facetKey + "\". Received \"" + n + "\"");
@@ -315,16 +318,12 @@ var traverseEvaluationTree = function (item, evalutionTree, l) {
         return evalutionTree.filterEvaluator(item, l);
     }
     var tree = evalutionTree;
-    // TODO: This is kinda messy.... And I'm not even sure the last case is necessary
-    if (tree.left && tree.right) {
-        if (tree.joinType === AND) {
-            return (traverseEvaluationTree(item, tree.left, l) &&
-                !tree.invert === traverseEvaluationTree(item, tree.right, l));
-        }
-        return (traverseEvaluationTree(item, tree.left, l) ||
+    if (tree.joinType === AND) {
+        return (traverseEvaluationTree(item, tree.left, l) &&
             !tree.invert === traverseEvaluationTree(item, tree.right, l));
     }
-    return traverseEvaluationTree(item, tree.left, l);
+    return (traverseEvaluationTree(item, tree.left, l) ||
+        !tree.invert === traverseEvaluationTree(item, tree.right, l));
 };
 var recursivelyGenerateEvaluators = function (split, facets) {
     if (Array.isArray(split)) {
@@ -332,12 +331,17 @@ var recursivelyGenerateEvaluators = function (split, facets) {
             throw new Error('Invalid syntax');
         }
         // Special case for when the query string starts with NOT. e.g. "NOT (is::duplicate)"
+        // TODO: Is the boolean check for && split[1] really necessary? I don't think so...
+        // TODO: This does not support leading "OR NOT" queries. Which I don't think are valid anyway given that
+        // the alwaysTrueFilterEvaluator will cause them to always be true.
+        // TODO: WTF does OR NOT do anyway??? test it!
+        // "first:=:james OR NOT last:=:collins" is the inverse of "(NOT first:=:james) AND last:=:collins"
         if (split[0] === NOT && split[1]) {
             return {
-                left: { filterEvaluator: alwaysTrueFilterEvaluator, raw: '' },
+                left: { filterEvaluator: alwaysTrueFilterEvaluator, raw: 'TRUE' },
                 joinType: AND,
                 invert: true,
-                right: recursivelyGenerateEvaluators(split[1], facets)
+                right: recursivelyGenerateEvaluators(split.slice(1), facets)
             };
         }
         // Case like (foo:=:bar) which will become ["foo:=:bar"]
@@ -376,6 +380,7 @@ var generateEvaluationTree = function (input, facets) {
     var evaluationTree = recursivelyGenerateEvaluators(split, facets);
     return evaluationTree;
 };
+//# sourceMappingURL=helpers.js.map
 
 var Lapidary = /** @class */ (function () {
     function Lapidary(items, facets, options) {
@@ -401,7 +406,9 @@ var Lapidary = /** @class */ (function () {
             return setIn(_this.permanentContext, keyPath, value);
         };
         this.getInPermanentContext = function (keyPath) { return getIn(_this.permanentContext, keyPath); };
-        this.getEvaluationTree = function (query) { return generateEvaluationTree(query, _this.facets); };
+        this.getEvaluationTree = function (query) {
+            return generateEvaluationTree(query, _this.facets);
+        };
         this.parseEvaluationTree = function (evalutionTree) {
             // Reset transient context before each run
             _this.clearTransientContext();

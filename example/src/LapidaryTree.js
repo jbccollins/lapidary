@@ -18,7 +18,7 @@ const transformEvaluationTree = evaluationTree => {
   const isLeaf = typeof filterEvaluator === "function";
   
   if (isLeaf) {
-    return ({name: raw ? raw : 'TRUE'})
+    return ({name: raw})
   }
   // Filter falsy children
   const children = [left, right].filter(i => i);
@@ -44,7 +44,6 @@ class LapidaryTree extends React.Component {
   render() {
     const { evaluationTree } = this.props;
     const data = transformEvaluationTree(evaluationTree);
-    console.log(data);
     return(
       <div style={{width: "522px", height: "400px"}}>
         <Tree
@@ -53,6 +52,7 @@ class LapidaryTree extends React.Component {
           data={data ? data : [{name: "no query"}]}
           orientation="vertical"
           nodeSvgShape={svgSquare}
+          transitionDuration={0}
           styles={{
             links: {},
             nodes: {

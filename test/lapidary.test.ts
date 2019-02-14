@@ -175,10 +175,14 @@ describe('Generic Malformed Queries', () => {
       )
     }),
     // This is now interpreted as a raw query since it doesn't match the regex
-    it('Fails given empty right hand side', () => {
+    it('Fails given empty right hand side (string)', () => {
       const lapidary = new Lapidary(items, facets, options)
       expect(() => lapidary.parseQuery('name:=:')).toThrow(`Expected a value for "name"`)
     })
+  it('Fails given empty right hand side (numeric)', () => {
+    const lapidary = new Lapidary(items, facets, options)
+    expect(() => lapidary.parseQuery('edition:=:')).toThrow(`Expected a value for "edition"`)
+  })
 })
 
 describe('String Queries', () => {
@@ -391,6 +395,16 @@ describe('Negation', () => {
     const results = lapidary.parseQuery('NOT name:=:"My Derpy Turtle"')
     expect(results).toEqual([WP_1ST, WP_2ND, HP_1ST])
   }),
+    it('Handles leading negation with multiple cuts', () => {
+      const lapidary = new Lapidary(items, facets, options)
+      const results = lapidary.parseQuery('NOT name:=:"My Derpy Turtle" OR name:=:"War and Peace"')
+      expect(results).toEqual([HP_1ST])
+    }),
+    it('Handles scoped negation with multiple cuts', () => {
+      const lapidary = new Lapidary(items, facets, options)
+      const results = lapidary.parseQuery('(NOT name:=:"My Derpy Turtle") OR edition:=:1')
+      expect(results).toEqual([WP_1ST, WP_2ND, MDT_1ST, HP_1ST])
+    }),
     it('Handles leading negation with parentheses', () => {
       const lapidary = new Lapidary(items, facets, options)
       const results = lapidary.parseQuery('NOT (name:=:"My Derpy Turtle")')

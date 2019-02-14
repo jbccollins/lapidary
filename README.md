@@ -50,7 +50,7 @@ This means that `age:>:21 AND age:<:30` is equivalent to `age:>:21 age:<:30`. It
 Cuts can be encapsulated inside parentheses:\
 <img src="readme_images/basic_parens.png" alt="basic" height="91px">
 
-Cuts can be negated using the `NOT` keyword:\
+Cuts and encapsulations can be negated using the `NOT` keyword:\
 <img src="readme_images/leading_not.png" alt="basic" height="91px">
 
 Note that negation only affects cuts and encapsulations to the right and will affect <b>EVERY</b> cut and encapsulation to the right unless parentheses are used to restrict the domain of the negation.
@@ -62,7 +62,7 @@ is equivalent to
 and can return different results than\
 `age:>:21 AND (NOT age:<:30) OR age:=:10`
 
-Cuts and encapsulations can be nested using parentheses:\
+Cuts and encapsulations can be deeply nested using parentheses:\
 <img src="readme_images/nested_parens.png" alt="basic" height="91px">
 
 This screenshot kinda shows some of the more advanced types of queries you can do with Lapidary.
@@ -80,6 +80,19 @@ At this point it's almost fully functional. I'd like to build a useful little in
 ### Best Practices
 
 English is a weird language. And given the "pseudo code" feel of Lapidary queries it can be tempting to support operations that have a similar flow to the way we tend to speak. For example let's say you have data that has a color facet. In english it's natural to say "That thing is red". However you probably don't want to support `is::red`. Instead you want `color:=:red`. 
+
+### Gotchas
+Once again: English is a weird language. Be careful when while writing lapidary queries
+Consider the question `I want to find everyone who is not 18 and who is not 21 either`;
+
+You might be tempted to write this:
+`NOT (age:=:20 AND age:=:30)`
+
+the `age:=:20 AND age:=:30` part of that query will <b>ALWAYS</b> evaluate to false meaning that this query
+effectively evaluates to `Return everyone where "not false" is true`. Which is always true...
+
+What you really want is
+`NOT (age:=:20 OR age:=:30)`
 
 ### Acknowledgements
 

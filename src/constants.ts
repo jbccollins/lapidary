@@ -29,8 +29,7 @@ const COMPARISONS = [
 const AND = 'AND'
 const OR = 'OR'
 const NOT = 'NOT'
-
-const JOINS = [AND, OR]
+const XOR = 'XOR'
 
 /* SUGGESTION REGEX */
 
@@ -54,12 +53,12 @@ export {
   IMPLICIT,
   INCLUSIVE_BETWEEN,
   IS,
-  JOINS,
   LESS_THAN,
   LESS_THAN_OR_EQUAL,
   NOT,
   NOT_EQUAL,
   NUMERIC,
   OR,
-  STRING
+  STRING,
+  XOR
 }
