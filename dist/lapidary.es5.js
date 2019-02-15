@@ -14,8 +14,10 @@ var NOT_EQUAL = '!=';
 var AND = 'AND';
 var OR = 'OR';
 var NOT = 'NOT';
+var XOR = 'XOR';
 /* SUGGESTION REGEX */
 var FACET_SUGGESTION_REGEX = /\w+/gi;
+//# sourceMappingURL=constants.js.map
 
 var _a, _b;
 var checkValue = function (v, facetKey) {
@@ -318,12 +320,24 @@ var traverseEvaluationTree = function (item, evalutionTree, l) {
         return evalutionTree.filterEvaluator(item, l);
     }
     var tree = evalutionTree;
-    if (tree.joinType === AND) {
-        return (traverseEvaluationTree(item, tree.left, l) &&
-            !tree.invert === traverseEvaluationTree(item, tree.right, l));
+    switch (tree.joinType) {
+        case AND:
+            return (traverseEvaluationTree(item, tree.left, l) &&
+                !tree.invert === traverseEvaluationTree(item, tree.right, l));
+        case OR:
+            return (traverseEvaluationTree(item, tree.left, l) ||
+                !tree.invert === traverseEvaluationTree(item, tree.right, l));
+        case XOR:
+            /* // from: http://www.howtocreate.co.uk/xor.html
+              if( !foo != !bar ) {
+                ...
+              }
+            */
+            return (!traverseEvaluationTree(item, tree.left, l) !=
+                !(!tree.invert === traverseEvaluationTree(item, tree.right, l)));
+        default:
+            throw new Error("Unrecognized join type \"" + tree.joinType + "\"");
     }
-    return (traverseEvaluationTree(item, tree.left, l) ||
-        !tree.invert === traverseEvaluationTree(item, tree.right, l));
 };
 var recursivelyGenerateEvaluators = function (split, facets) {
     if (Array.isArray(split)) {
@@ -349,7 +363,7 @@ var recursivelyGenerateEvaluators = function (split, facets) {
             return recursivelyGenerateEvaluators(split[0], facets);
         }
         // Explicit join type
-        if (split[1] === OR || split[1] === AND) {
+        if (split[1] === OR || split[1] === AND || split[1] === XOR) {
             var inverted_1 = split[2] && split[2] === NOT;
             return {
                 left: recursivelyGenerateEvaluators(split[0], facets),
@@ -380,7 +394,6 @@ var generateEvaluationTree = function (input, facets) {
     var evaluationTree = recursivelyGenerateEvaluators(split, facets);
     return evaluationTree;
 };
-//# sourceMappingURL=helpers.js.map
 
 var Lapidary = /** @class */ (function () {
     function Lapidary(items, facets, options) {

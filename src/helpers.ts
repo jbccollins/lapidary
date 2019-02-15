@@ -7,7 +7,7 @@ import {
   Item
 } from './types'
 import Lapidary from './lapidary'
-import { AND, OR, NOT } from './constants'
+import { AND, OR, XOR, NOT } from './constants'
 import { splitBalanced, parenthesesAreBalanced } from './utilities'
 import { DefaultEvaluationGenerator } from './operations'
 
@@ -100,16 +100,30 @@ export const traverseEvaluationTree = (
   }
   const tree = evalutionTree as EvaluationTree
 
-  if (tree.joinType === AND) {
-    return (
-      traverseEvaluationTree(item, tree.left, l) &&
-      !tree.invert === traverseEvaluationTree(item, tree.right, l)
-    )
+  switch (tree.joinType) {
+    case AND:
+      return (
+        traverseEvaluationTree(item, tree.left, l) &&
+        !tree.invert === traverseEvaluationTree(item, tree.right, l)
+      )
+    case OR:
+      return (
+        traverseEvaluationTree(item, tree.left, l) ||
+        !tree.invert === traverseEvaluationTree(item, tree.right, l)
+      )
+    case XOR:
+      /* // from: http://www.howtocreate.co.uk/xor.html
+        if( !foo != !bar ) {
+          ...
+        }
+      */
+      return (
+        !traverseEvaluationTree(item, tree.left, l) !=
+        !(!tree.invert === traverseEvaluationTree(item, tree.right, l))
+      )
+    default:
+      throw new Error(`Unrecognized join type "${tree.joinType}"`)
   }
-  return (
-    traverseEvaluationTree(item, tree.left, l) ||
-    !tree.invert === traverseEvaluationTree(item, tree.right, l)
-  )
 }
 
 export const recursivelyGenerateEvaluators = (
@@ -140,7 +154,7 @@ export const recursivelyGenerateEvaluators = (
       return recursivelyGenerateEvaluators(split[0], facets)
     }
     // Explicit join type
-    if (split[1] === OR || split[1] === AND) {
+    if (split[1] === OR || split[1] === AND || split[1] === XOR) {
       const inverted = split[2] && split[2] === NOT
       return {
         left: recursivelyGenerateEvaluators(split[0], facets),

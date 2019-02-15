@@ -1,7 +1,14 @@
 import Lapidary from '../src/lapidary'
 import { STRING, IS, IMPLICIT } from '../src/constants'
 
-import { Item, Facets, ImplicitComparator, FilterEvaluator, FilterGenerator } from '../src/types'
+import {
+  Item,
+  Facets,
+  ImplicitComparator,
+  FilterEvaluator,
+  FilterGenerator,
+  EvaluationTree
+} from '../src/types'
 
 import { StringOperations, NumericOperations } from '../src/operations'
 import { traverseEvaluationTree, recursivelyGenerateEvaluators } from '../src/helpers'
@@ -279,6 +286,16 @@ describe('Join Queries', () => {
       const results = lapidary.parseQuery('name:=:"My Derpy Turtle" AND edition:=:2')
       expect(results).toEqual([MDT_2ND])
     }),
+    it('Handles explicit OR', () => {
+      const lapidary = new Lapidary(items, facets, options)
+      const results = lapidary.parseQuery('name:=:"My Derpy Turtle" OR edition:=:1')
+      expect(results).toEqual([WP_1ST, MDT_1ST, MDT_2ND, HP_1ST])
+    }),
+    it('Handles explicit XOR', () => {
+      const lapidary = new Lapidary(items, facets, options)
+      const results = lapidary.parseQuery('name:=:"My Derpy Turtle" XOR edition:=:2')
+      expect(results).toEqual([WP_2ND, MDT_1ST])
+    }),
     it('Handles nested joins', () => {
       const lapidary = new Lapidary(items, facets, options)
       const results = lapidary.parseQuery(
@@ -349,6 +366,18 @@ describe('Miscellaneous', () => {
     const r = traverseEvaluationTree(WP_1ST, null, lapidary)
     expect(r).toBe(false)
   }),
+    it('Handles an evaluation tree with an invalid join type', () => {
+      const lapidary = new Lapidary(items, facets, options)
+      const badEvaluationTree: EvaluationTree = {
+        joinType: 'LOL',
+        left: null,
+        right: null,
+        invert: false
+      }
+      expect(() => traverseEvaluationTree(WP_1ST, badEvaluationTree, lapidary)).toThrow(
+        `Unrecognized join type "LOL"`
+      )
+    }),
     it('Handles extra spaces between expressions', () => {
       const lapidary = new Lapidary(items, facets, options)
       const results = lapidary.parseQuery('name:=:"My Derpy Turtle"            edition:=:2        ')
