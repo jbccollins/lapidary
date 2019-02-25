@@ -4,6 +4,9 @@
   "version": "0.0.0",
   "license": "MIT",
   "private": true,
+  "engines": {
+    "node": ">=8.12.0"
+  },
   "dependencies": {
     "@material-ui/core": "^3.9.2",
     "@material-ui/icons": "^3.0.2",
@@ -18,7 +21,8 @@
     "react-scripts": "^1.1.4"
   },
   "scripts": {
-    "start": "react-scripts --max-old-space-size=8192 --optimize-for-size --max_old_space_size=8192 --optimize_for_size start",
+    "start": "NODE_ENV=production node server.js",
+    "watch": "react-scripts --max-old-space-size=8192 --optimize-for-size --max_old_space_size=8192 --optimize_for_size start",
     "build": "react-scripts build",
     "test": "react-scripts test --env=jsdom",
     "eject": "react-scripts eject",

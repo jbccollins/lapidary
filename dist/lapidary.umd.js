@@ -23,7 +23,6 @@
   var XOR = 'XOR';
   /* SUGGESTION REGEX */
   var FACET_SUGGESTION_REGEX = /\w+/gi;
-  //# sourceMappingURL=constants.js.map
 
   var _a, _b;
   var checkValue = function (v, facetKey) {
@@ -147,7 +146,6 @@
       _b[BETWEEN] = NumericBetweenEvaluationGenerator,
       _b[INCLUSIVE_BETWEEN] = NumericInclusiveBetweenEvaluationGenerator,
       _b);
-  //# sourceMappingURL=operations.js.map
 
   // https://gist.github.com/scottrippey/1349099
   var splitBalanced = function (input, 
@@ -252,7 +250,6 @@
       }
       return stack.length === 0;
   };
-  //# sourceMappingURL=utilities.js.map
 
   var FILTER_STRING_REGEX = /.+:.*:/gi;
   // const FILTER_STRING_REGEX = /.+:.*:.+/gi
@@ -469,7 +466,6 @@
       }
       return Lapidary;
   }());
-  //# sourceMappingURL=lapidary.js.map
 
   exports.default = Lapidary;
   exports.StringOperations = StringOperations;
