@@ -1,6 +1,6 @@
 ![](https://i.imgur.com/RTlTF2g.png)
 
-![Travis CI Badge](https://travis-ci.org/jbccollins/lapidary.svg?branch=master) 
+![Travis CI Badge](https://travis-ci.org/jbccollins/lapidary.svg?branch=master) [![NPM](https://img.shields.io/npm/v/lapidary.svg)](https://www.npmjs.com/package/lapidary)
 
 ## [Demo](https://jbccollins.github.io/lapidary/demo/index.html)
 
