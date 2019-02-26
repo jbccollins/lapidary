@@ -75,16 +75,24 @@ exports.traverseEvaluationTree = function (item, evalutionTree, l) {
         return evalutionTree.filterEvaluator(item, l);
     }
     var tree = evalutionTree;
-    // TODO: This is kinda messy.... And I'm not even sure the last case is necessary
-    if (tree.left && tree.right) {
-        if (tree.joinType === constants_1.AND) {
+    switch (tree.joinType) {
+        case constants_1.AND:
             return (exports.traverseEvaluationTree(item, tree.left, l) &&
                 !tree.invert === exports.traverseEvaluationTree(item, tree.right, l));
-        }
-        return (exports.traverseEvaluationTree(item, tree.left, l) ||
-            !tree.invert === exports.traverseEvaluationTree(item, tree.right, l));
+        case constants_1.OR:
+            return (exports.traverseEvaluationTree(item, tree.left, l) ||
+                !tree.invert === exports.traverseEvaluationTree(item, tree.right, l));
+        case constants_1.XOR:
+            /* // from: http://www.howtocreate.co.uk/xor.html
+              if( !foo != !bar ) {
+                ...
+              }
+            */
+            return (!exports.traverseEvaluationTree(item, tree.left, l) !=
+                !(!tree.invert === exports.traverseEvaluationTree(item, tree.right, l)));
+        default:
+            throw new Error("Unrecognized join type \"" + tree.joinType + "\"");
     }
-    return exports.traverseEvaluationTree(item, tree.left, l);
 };
 exports.recursivelyGenerateEvaluators = function (split, facets) {
     if (Array.isArray(split)) {
@@ -92,25 +100,25 @@ exports.recursivelyGenerateEvaluators = function (split, facets) {
             throw new Error('Invalid syntax');
         }
         // Special case for when the query string starts with NOT. e.g. "NOT (is::duplicate)"
+        // TODO: Is the boolean check for && split[1] really necessary? I don't think so...
+        // TODO: This does not support leading "OR NOT" queries. Which I don't think are valid anyway given that
+        // the alwaysTrueFilterEvaluator will cause them to always be true.
+        // TODO: WTF does OR NOT do anyway??? test it!
+        // "first:=:james OR NOT last:=:collins" is the inverse of "(NOT first:=:james) AND last:=:collins"
         if (split[0] === constants_1.NOT && split[1]) {
             return {
-                left: { filterEvaluator: alwaysTrueFilterEvaluator, raw: '' },
+                left: { filterEvaluator: alwaysTrueFilterEvaluator, raw: 'TRUE' },
                 joinType: constants_1.AND,
                 invert: true,
-                right: exports.recursivelyGenerateEvaluators(split[1], facets)
+                right: exports.recursivelyGenerateEvaluators(split.slice(1), facets)
             };
         }
         // Case like (foo:=:bar) which will become ["foo:=:bar"]
         if (split.length === 1) {
-            return {
-                left: exports.recursivelyGenerateEvaluators(split[0], facets),
-                joinType: null,
-                invert: false,
-                right: null
-            };
+            return exports.recursivelyGenerateEvaluators(split[0], facets);
         }
         // Explicit join type
-        if (split[1] === constants_1.OR || split[1] === constants_1.AND) {
+        if (split[1] === constants_1.OR || split[1] === constants_1.AND || split[1] === constants_1.XOR) {
             var inverted_1 = split[2] && split[2] === constants_1.NOT;
             return {
                 left: exports.recursivelyGenerateEvaluators(split[0], facets),

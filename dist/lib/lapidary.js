@@ -30,18 +30,24 @@ var Lapidary = /** @class */ (function () {
             return utilities_1.setIn(_this.permanentContext, keyPath, value);
         };
         this.getInPermanentContext = function (keyPath) { return utilities_1.getIn(_this.permanentContext, keyPath); };
-        this.parseQuery = function (query) {
+        this.getEvaluationTree = function (query) {
+            return helpers_1.generateEvaluationTree(query, _this.facets);
+        };
+        this.parseEvaluationTree = function (evalutionTree) {
             // Reset transient context before each run
             _this.clearTransientContext();
-            if (query.trim() === '') {
-                return _this.items;
-            }
-            var evalutionTree = helpers_1.generateEvaluationTree(query, _this.facets);
             var result = _this.items.filter(function (item, index) {
                 _this.setCurrentIndex(index);
                 return helpers_1.traverseEvaluationTree(item, evalutionTree, _this);
             });
             return result;
+        };
+        this.parseQuery = function (query) {
+            if (query.trim() === '') {
+                return _this.items;
+            }
+            var evalutionTree = helpers_1.generateEvaluationTree(query, _this.facets);
+            return _this.parseEvaluationTree(evalutionTree);
         };
         /*
           CASES:

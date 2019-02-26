@@ -2,15 +2,19 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 var _a, _b;
 var constants_1 = require("./constants");
-// String quotes when doing string operations
-var cleanString = function (s, facetKey) {
-    if (typeof s === 'undefined' || s === '') {
+var checkValue = function (v, facetKey) {
+    if (typeof v === 'undefined' || v === '') {
         throw new Error("Expected a value for \"" + facetKey + "\"");
     }
+};
+// String quotes when doing string operations
+var cleanString = function (s, facetKey) {
+    checkValue(s, facetKey);
     return s.replace(/['"]+/g, '');
 };
 // Interpret string value as number
 var cleanNumber = function (n, facetKey) {
+    checkValue(n, facetKey);
     var num = Number(n);
     if (isNaN(num)) {
         throw new Error("Expected a numeric value for \"" + facetKey + "\". Received \"" + n + "\"");

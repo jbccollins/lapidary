@@ -50,8 +50,8 @@ var OR = 'OR';
 exports.OR = OR;
 var NOT = 'NOT';
 exports.NOT = NOT;
-var JOINS = [AND, OR];
-exports.JOINS = JOINS;
+var XOR = 'XOR';
+exports.XOR = XOR;
 /* SUGGESTION REGEX */
 var FACET_SUGGESTION_REGEX = /\w+/gi;
 exports.FACET_SUGGESTION_REGEX = FACET_SUGGESTION_REGEX;
