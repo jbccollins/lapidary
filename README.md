@@ -43,7 +43,8 @@ Each cut consists of three parts
 Cuts can be linked using joins:\
 <img src="readme_images/explicit_and.png" alt="basic" height="91px">
 
-There are two join types: `AND` and `OR`
+There are three join types: `AND`, `OR` and `XOR`.
+
 Spaces between cuts are implicitly treated as an `AND` join type.
 This means that `age:>:21 AND age:<:30` is equivalent to `age:>:21 age:<:30`. It is still possible to have spaces in your parameters by using quotes like so: `street:=:"Brookside Avenue"`
 
@@ -83,7 +84,7 @@ English is a weird language. And given the "pseudo code" feel of Lapidary querie
 
 ### Gotchas
 Once again: English is a weird language. Be careful when while writing lapidary queries
-Consider the question `I want to find everyone who is not 18 and who is not 21 either`;
+Consider the question `I want to find everyone who is not 20 and who is not 30 either`;
 
 You might be tempted to write this:
 `NOT (age:=:20 AND age:=:30)`
