@@ -118,7 +118,7 @@ export const traverseEvaluationTree = (
         }
       */
       return (
-        !traverseEvaluationTree(item, tree.left, l) !=
+        !traverseEvaluationTree(item, tree.left, l) !==
         !(!tree.invert === traverseEvaluationTree(item, tree.right, l))
       )
     default:
