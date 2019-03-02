@@ -2,7 +2,7 @@
 
 ![Travis CI Badge](https://travis-ci.org/jbccollins/lapidary.svg?branch=master) [![NPM](https://img.shields.io/npm/v/lapidary.svg)](https://www.npmjs.com/package/lapidary)
 
-## [Demo](https://jbccollins.github.io/lapidary/demo/index.html)
+## [Demo](https://lapidary-demo.herokuapp.com/)
 
 ### Configurable Faceted Filtering
 
