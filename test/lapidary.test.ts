@@ -10,7 +10,7 @@ import {
   EvaluationTree
 } from '../src/types'
 
-import { StringOperations, NumericOperations } from '../src/operations'
+import { StringOperations, NumericOperations, DateOperations } from '../src/operations'
 import { traverseEvaluationTree, recursivelyGenerateEvaluators } from '../src/helpers'
 
 const DUPLICATE = 'duplicate'
@@ -87,32 +87,38 @@ const ImplicitEvaluationGenerator: FilterGenerator = (
 
 const WP_1ST = {
   name: 'War and Peace',
-  edition: 1
+  edition: 1,
+  date: '2015-07-12'
 }
 
 const WP_2ND = {
   name: 'War and Peace',
-  edition: 2
+  edition: 2,
+  date: '2018-06-12'
 }
 
 const MDT_1ST = {
   name: 'My Derpy Turtle',
-  edition: 1
+  edition: 1,
+  date: '2020-06-12'
 }
 
 const MDT_2ND = {
   name: 'My Derpy Turtle',
-  edition: 2
+  edition: 2,
+  date: '06/12/2016'
 }
 
 const HP_1ST = {
   name: 'Harry Potter and the Sorcerers Stone',
-  edition: 1
+  edition: 1,
+  date: '2012-06-12'
 }
 
 const ESCAPED = {
   name: 'Its \\ spelled just like escape',
-  edition: 1
+  edition: 1,
+  date: '1922-06-12'
 }
 
 const items: Item[] = [WP_1ST, WP_2ND, MDT_1ST, MDT_2ND, HP_1ST]
@@ -126,6 +132,10 @@ const facets: Facets = {
   name: {
     operations: StringOperations,
     objectKey: 'name'
+  },
+  date: {
+    operations: DateOperations,
+    objectKey: 'date'
   },
   edition: EDITION_FACET,
   ed: EDITION_FACET,
@@ -272,6 +282,49 @@ describe('Numeric Queries', () => {
       const lapidary = new Lapidary(items, facets, options)
       const results = lapidary.parseQuery('edition:inbetween:2,100')
       expect(results).toEqual([WP_2ND, MDT_2ND])
+    })
+})
+
+describe('Date Queries', () => {
+  it('Evaluates equality', () => {
+    const lapidary = new Lapidary(items, facets, options)
+    const results = lapidary.parseQuery('date:=:2016-06-12')
+    expect(results).toEqual([MDT_2ND])
+  }),
+    it('Evaluates negative equality', () => {
+      const lapidary = new Lapidary(items, facets, options)
+      const results = lapidary.parseQuery('date:!=:2016-06-12')
+      expect(results).toEqual([WP_1ST, WP_2ND, MDT_1ST, HP_1ST])
+    }),
+    it('Evaluates <=', () => {
+      const lapidary = new Lapidary(items, facets, options)
+      const results = lapidary.parseQuery('date:<=:2016-06-12')
+      expect(results).toEqual([WP_1ST, MDT_2ND, HP_1ST])
+    }),
+    it('Evaluates >=', () => {
+      const lapidary = new Lapidary(items, facets, options)
+      const results = lapidary.parseQuery('date:>=:2016-06-12')
+      expect(results).toEqual([WP_2ND, MDT_1ST, MDT_2ND])
+    }),
+    it('Evaluates <', () => {
+      const lapidary = new Lapidary(items, facets, options)
+      const results = lapidary.parseQuery('date:<:2016-06-12')
+      expect(results).toEqual([WP_1ST, HP_1ST])
+    }),
+    it('Evaluates >', () => {
+      const lapidary = new Lapidary(items, facets, options)
+      const results = lapidary.parseQuery('date:>:2016-06-12')
+      expect(results).toEqual([WP_2ND, MDT_1ST])
+    }),
+    it('Evaluates between', () => {
+      const lapidary = new Lapidary(items, facets, options)
+      const results = lapidary.parseQuery('date:between:2016-06-12,2020-06-12')
+      expect(results).toEqual([WP_2ND])
+    }),
+    it('Evaluates inbetween', () => {
+      const lapidary = new Lapidary(items, facets, options)
+      const results = lapidary.parseQuery('date:inbetween:2016-06-12,2020-06-12')
+      expect(results).toEqual([WP_2ND, MDT_1ST, MDT_2ND])
     })
 })
 

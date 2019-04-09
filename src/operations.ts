@@ -1,4 +1,5 @@
 import { FilterEvaluator, FilterGenerator, Item, Facets, OperationMapping } from './types'
+import { parse, isEqual, isBefore, isAfter } from 'date-fns'
 
 import Lapidary from './lapidary'
 import {
@@ -176,6 +177,102 @@ const NumericInclusiveBetweenEvaluationGenerator: FilterGenerator = (
   }
 }
 
+const DateEqualityEvaluationGenerator: FilterGenerator = (
+  facetKey: keyof Facets,
+  expression: string
+): FilterEvaluator => {
+  return (item: Item, l: Lapidary) => {
+    const objectKey = l.getFacet(facetKey).objectKey
+    return isEqual(parse(item[objectKey]), parse(cleanString(expression, facetKey)))
+  }
+}
+
+const DateNegativeEqualityEvaluationGenerator: FilterGenerator = (
+  facetKey: keyof Facets,
+  expression: string
+): FilterEvaluator => {
+  return (item: Item, l: Lapidary) => {
+    const objectKey = l.getFacet(facetKey).objectKey
+    return !isEqual(parse(item[objectKey]), parse(cleanString(expression, facetKey)))
+  }
+}
+
+const DateLTEvaluationGenerator: FilterGenerator = (
+  facetKey: keyof Facets,
+  expression: string
+): FilterEvaluator => {
+  return (item: Item, l: Lapidary) => {
+    const objectKey = l.getFacet(facetKey).objectKey
+    return isBefore(parse(item[objectKey]), parse(cleanString(expression, facetKey)))
+  }
+}
+
+const DateLTEEvaluationGenerator: FilterGenerator = (
+  facetKey: keyof Facets,
+  expression: string
+): FilterEvaluator => {
+  return (item: Item, l: Lapidary) => {
+    const objectKey = l.getFacet(facetKey).objectKey
+    const date1 = parse(item[objectKey])
+    const date2 = parse(cleanString(expression, facetKey))
+    return isBefore(date1, date2) || isEqual(date1, date2)
+  }
+}
+
+const DateGTEvaluationGenerator: FilterGenerator = (
+  facetKey: keyof Facets,
+  expression: string
+): FilterEvaluator => {
+  return (item: Item, l: Lapidary) => {
+    const objectKey = l.getFacet(facetKey).objectKey
+    return isAfter(parse(item[objectKey]), parse(cleanString(expression, facetKey)))
+  }
+}
+
+const DateGTEEvaluationGenerator: FilterGenerator = (
+  facetKey: keyof Facets,
+  expression: string
+): FilterEvaluator => {
+  return (item: Item, l: Lapidary) => {
+    const objectKey = l.getFacet(facetKey).objectKey
+    const date1 = parse(item[objectKey])
+    const date2 = parse(cleanString(expression, facetKey))
+    return isAfter(date1, date2) || isEqual(date1, date2)
+  }
+}
+
+const DateBetweenEvaluationGenerator: FilterGenerator = (
+  facetKey: keyof Facets,
+  expression: string
+): FilterEvaluator => {
+  return (item: Item, l: Lapidary) => {
+    const objectKey = l.getFacet(facetKey).objectKey
+    const [lower, upper] = expression.split(',')
+    const date = parse(item[objectKey])
+    const lowerDate = parse(cleanString(lower, facetKey))
+    const upperDate = parse(cleanString(upper, facetKey))
+    return isAfter(date, lowerDate) && isBefore(date, upperDate)
+  }
+}
+
+const DateInclusiveBetweenEvaluationGenerator: FilterGenerator = (
+  facetKey: keyof Facets,
+  expression: string
+): FilterEvaluator => {
+  return (item: Item, l: Lapidary) => {
+    const objectKey = l.getFacet(facetKey).objectKey
+    const [lower, upper] = expression.split(',')
+    const date = parse(item[objectKey])
+    const lowerDate = parse(cleanString(lower, facetKey))
+    const upperDate = parse(cleanString(upper, facetKey))
+    return (
+      (isAfter(date, lowerDate) && isBefore(date, upperDate)) ||
+      isEqual(date, lowerDate) ||
+      isEqual(date, upperDate)
+    )
+  }
+}
+
 const DefaultEvaluationGenerator: FilterGenerator = (
   facetKey: keyof Facets,
   expression: string
@@ -202,4 +299,15 @@ const NumericOperations: OperationMapping = {
   [INCLUSIVE_BETWEEN]: NumericInclusiveBetweenEvaluationGenerator
 }
 
-export { StringOperations, NumericOperations, DefaultEvaluationGenerator }
+const DateOperations: OperationMapping = {
+  [EQUAL]: DateEqualityEvaluationGenerator,
+  [NOT_EQUAL]: DateNegativeEqualityEvaluationGenerator,
+  [GREATER_THAN]: DateGTEvaluationGenerator,
+  [LESS_THAN]: DateLTEvaluationGenerator,
+  [GREATER_THAN_OR_EQUAL]: DateGTEEvaluationGenerator,
+  [LESS_THAN_OR_EQUAL]: DateLTEEvaluationGenerator,
+  [BETWEEN]: DateBetweenEvaluationGenerator,
+  [INCLUSIVE_BETWEEN]: DateInclusiveBetweenEvaluationGenerator
+}
+
+export { StringOperations, NumericOperations, DateOperations, DefaultEvaluationGenerator }

@@ -1,4 +1,4 @@
-import { StringOperations, NumericOperations } from './operations';
+import { StringOperations, NumericOperations, DateOperations } from './operations';
 import { EvaluationTree, EvaluationTreeLeaf, Item, Facets, Facet } from './types';
 export default class Lapidary {
     items: Item[];
@@ -31,4 +31,4 @@ export default class Lapidary {
         defaultSuggestion: string;
     });
 }
-export { StringOperations, NumericOperations, Lapidary };
+export { StringOperations, NumericOperations, DateOperations, Lapidary };
