@@ -3,6 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var operations_1 = require("./operations");
 exports.StringOperations = operations_1.StringOperations;
 exports.NumericOperations = operations_1.NumericOperations;
+exports.DateOperations = operations_1.DateOperations;
 var helpers_1 = require("./helpers");
 var utilities_1 = require("./utilities");
 var constants_1 = require("./constants");

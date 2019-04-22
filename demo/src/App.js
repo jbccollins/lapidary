@@ -1,16 +1,7 @@
-/*
-TODO: this is buggy. Check the chart:
-
-`
-NOT (first:=:2 OR first:=:3) AND first:=:"My Derpy Turtle" AND NOT age:>=:10
-`
-*/
-
 import React, { Component } from 'react';
-//import Fuse from 'fuse.js';
-import { Lapidary, StringOperations, NumericOperations } from 'lapidary';
-import './people';
-//import './peoplesmall';
+import { Lapidary, StringOperations, NumericOperations, DateOperations } from 'lapidary';
+//import './people';
+import './peoplesmall';
 import { defaultFacet, ImplicitEvaluationGenerator } from './lapidary-helpers';
 import PeopleTable from './PeopleTable';
 import LapidaryTree from './LapidaryTree';
@@ -42,6 +33,10 @@ const facets = {
   first: FIRST_NAME_FACET,
   lastName: LAST_NAME_FACET,
   last: LAST_NAME_FACET,
+  dateRegistered: {
+    operations: DateOperations,
+    objectKey: 'registered',
+  },
   balance: {
     operations: NumericOperations,
     objectKey: 'balance'
@@ -84,11 +79,6 @@ export default class App extends Component {
   }
 
   componentDidMount() {
-    // var options = {
-    //   keys: ['firstName', 'lastName'],
-    //   id: '_id'
-    // }
-    // this.fuse = new Fuse(window.people, options)
     this.lapidary = new Lapidary(window.people, facets, {defaultSuggestion: "Try first:=:James OR last:=:Collins", defaultFacet: defaultFacet });
     this.setState({ready: true, data: this.lapidary.items});
   }

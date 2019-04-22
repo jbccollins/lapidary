@@ -88,7 +88,7 @@ exports.traverseEvaluationTree = function (item, evalutionTree, l) {
                 ...
               }
             */
-            return (!exports.traverseEvaluationTree(item, tree.left, l) !=
+            return (!exports.traverseEvaluationTree(item, tree.left, l) !==
                 !(!tree.invert === exports.traverseEvaluationTree(item, tree.right, l)));
         default:
             throw new Error("Unrecognized join type \"" + tree.joinType + "\"");

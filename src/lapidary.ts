@@ -1,4 +1,4 @@
-import { StringOperations, NumericOperations } from './operations'
+import { StringOperations, NumericOperations, DateOperations } from './operations'
 import { EvaluationTree, EvaluationTreeLeaf, Item, Facets, Facet } from './types'
 import { generateEvaluationTree, traverseEvaluationTree } from './helpers'
 import { setIn, getIn } from './utilities'
@@ -102,4 +102,4 @@ export default class Lapidary {
   }
 }
 
-export { StringOperations, NumericOperations, Lapidary }
+export { StringOperations, NumericOperations, DateOperations, Lapidary }

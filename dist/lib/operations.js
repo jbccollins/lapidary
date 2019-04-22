@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-var _a, _b;
+var _a, _b, _c;
+var date_fns_1 = require("date-fns");
 var constants_1 = require("./constants");
 var checkValue = function (v, facetKey) {
     if (typeof v === 'undefined' || v === '') {
@@ -103,6 +104,68 @@ var NumericInclusiveBetweenEvaluationGenerator = function (facetKey, expression)
             item[objectKey] <= cleanNumber(upper, facetKey));
     };
 };
+var DateEqualityEvaluationGenerator = function (facetKey, expression) {
+    return function (item, l) {
+        var objectKey = l.getFacet(facetKey).objectKey;
+        return date_fns_1.isEqual(date_fns_1.parse(item[objectKey]), date_fns_1.parse(cleanString(expression, facetKey)));
+    };
+};
+var DateNegativeEqualityEvaluationGenerator = function (facetKey, expression) {
+    return function (item, l) {
+        var objectKey = l.getFacet(facetKey).objectKey;
+        return !date_fns_1.isEqual(date_fns_1.parse(item[objectKey]), date_fns_1.parse(cleanString(expression, facetKey)));
+    };
+};
+var DateLTEvaluationGenerator = function (facetKey, expression) {
+    return function (item, l) {
+        var objectKey = l.getFacet(facetKey).objectKey;
+        return date_fns_1.isBefore(date_fns_1.parse(item[objectKey]), date_fns_1.parse(cleanString(expression, facetKey)));
+    };
+};
+var DateLTEEvaluationGenerator = function (facetKey, expression) {
+    return function (item, l) {
+        var objectKey = l.getFacet(facetKey).objectKey;
+        var date1 = date_fns_1.parse(item[objectKey]);
+        var date2 = date_fns_1.parse(cleanString(expression, facetKey));
+        return date_fns_1.isBefore(date1, date2) || date_fns_1.isEqual(date1, date2);
+    };
+};
+var DateGTEvaluationGenerator = function (facetKey, expression) {
+    return function (item, l) {
+        var objectKey = l.getFacet(facetKey).objectKey;
+        return date_fns_1.isAfter(date_fns_1.parse(item[objectKey]), date_fns_1.parse(cleanString(expression, facetKey)));
+    };
+};
+var DateGTEEvaluationGenerator = function (facetKey, expression) {
+    return function (item, l) {
+        var objectKey = l.getFacet(facetKey).objectKey;
+        var date1 = date_fns_1.parse(item[objectKey]);
+        var date2 = date_fns_1.parse(cleanString(expression, facetKey));
+        return date_fns_1.isAfter(date1, date2) || date_fns_1.isEqual(date1, date2);
+    };
+};
+var DateBetweenEvaluationGenerator = function (facetKey, expression) {
+    return function (item, l) {
+        var objectKey = l.getFacet(facetKey).objectKey;
+        var _a = expression.split(','), lower = _a[0], upper = _a[1];
+        var date = date_fns_1.parse(item[objectKey]);
+        var lowerDate = date_fns_1.parse(cleanString(lower, facetKey));
+        var upperDate = date_fns_1.parse(cleanString(upper, facetKey));
+        return date_fns_1.isAfter(date, lowerDate) && date_fns_1.isBefore(date, upperDate);
+    };
+};
+var DateInclusiveBetweenEvaluationGenerator = function (facetKey, expression) {
+    return function (item, l) {
+        var objectKey = l.getFacet(facetKey).objectKey;
+        var _a = expression.split(','), lower = _a[0], upper = _a[1];
+        var date = date_fns_1.parse(item[objectKey]);
+        var lowerDate = date_fns_1.parse(cleanString(lower, facetKey));
+        var upperDate = date_fns_1.parse(cleanString(upper, facetKey));
+        return ((date_fns_1.isAfter(date, lowerDate) && date_fns_1.isBefore(date, upperDate)) ||
+            date_fns_1.isEqual(date, lowerDate) ||
+            date_fns_1.isEqual(date, upperDate));
+    };
+};
 var DefaultEvaluationGenerator = function (facetKey, expression) {
     return function (item, l) { return l.defaultFacet(item, facetKey); };
 };
@@ -126,4 +189,15 @@ var NumericOperations = (_b = {},
     _b[constants_1.INCLUSIVE_BETWEEN] = NumericInclusiveBetweenEvaluationGenerator,
     _b);
 exports.NumericOperations = NumericOperations;
+var DateOperations = (_c = {},
+    _c[constants_1.EQUAL] = DateEqualityEvaluationGenerator,
+    _c[constants_1.NOT_EQUAL] = DateNegativeEqualityEvaluationGenerator,
+    _c[constants_1.GREATER_THAN] = DateGTEvaluationGenerator,
+    _c[constants_1.LESS_THAN] = DateLTEvaluationGenerator,
+    _c[constants_1.GREATER_THAN_OR_EQUAL] = DateGTEEvaluationGenerator,
+    _c[constants_1.LESS_THAN_OR_EQUAL] = DateLTEEvaluationGenerator,
+    _c[constants_1.BETWEEN] = DateBetweenEvaluationGenerator,
+    _c[constants_1.INCLUSIVE_BETWEEN] = DateInclusiveBetweenEvaluationGenerator,
+    _c);
+exports.DateOperations = DateOperations;
 //# sourceMappingURL=operations.js.map

@@ -49,6 +49,7 @@ const rows = [
   { id: 'age', numeric: true, disablePadding: false, label: 'Age' },
   { id: 'gender', numeric: false, disablePadding: false, label: 'Gender' },
   { id: 'balance', numeric: true, disablePadding: false, label: 'Balance ($)' },
+  { id: 'registered', numeric: false, disablePadding: false, label: 'Date Registered' },
 ];
 
 class EnhancedTableHead extends React.Component {
@@ -275,6 +276,7 @@ class EnhancedTable extends React.Component {
                       <TableCell>{n.age}</TableCell>
                       <TableCell>{n.gender}</TableCell>
                       <TableCell>{n.balance}</TableCell>
+                      <TableCell>{n.registered}</TableCell>
                     </TableRow>
                   );
                 })}

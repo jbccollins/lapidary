@@ -10,7 +10,7 @@ import {
   EvaluationTree
 } from '../src/types'
 
-import { StringOperations, NumericOperations, DateOperations } from '../src/operations'
+import { StringOperations, NumericOperations, DateOperations } from '../src/lapidary'
 import { traverseEvaluationTree, recursivelyGenerateEvaluators } from '../src/helpers'
 
 const DUPLICATE = 'duplicate'
