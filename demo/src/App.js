@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import { Lapidary, StringOperations, NumericOperations, DateOperations } from 'lapidary';
-//import './people';
-import './peoplesmall';
+import fetch from 'isomorphic-fetch';
 import { defaultFacet, ImplicitEvaluationGenerator } from './lapidary-helpers';
 import PeopleTable from './PeopleTable';
 import LapidaryTree from './LapidaryTree';
@@ -10,6 +9,7 @@ import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogTitle from '@material-ui/core/DialogTitle';
+import "./App.css";
 
 const FIRST_NAME_FACET = {
   operations: StringOperations,
@@ -78,13 +78,19 @@ export default class App extends Component {
     }
   }
 
-  componentDidMount() {
-    this.lapidary = new Lapidary(window.people, facets, {defaultSuggestion: "Try first:=:James OR last:=:Collins", defaultFacet: defaultFacet });
+  async componentDidMount() {
+    let people = await fetch("https://raw.githubusercontent.com/jbccollins/lapidary/master/demo/src/people.json", {
+      method: "GET",
+      headers: {
+        Accept: "application/json"
+      }
+    });
+    people = await people.json();
+    this.lapidary = new Lapidary(people, facets, {defaultSuggestion: "Try first:=:James OR last:=:Collins", defaultFacet: defaultFacet });
     this.setState({ready: true, data: this.lapidary.items});
   }
 
   handleShowChart = () => {
-    console.log('ha')
     this.setState({showChart: true});
   }
 
@@ -96,6 +102,9 @@ export default class App extends Component {
     const { ready, data, error, evaluationTree, showChart } = this.state;
     return (
       <div className='app'>
+        {!ready &&
+          <div className="loading-indicator">Loading Application Data...</div>
+        }
         {ready &&
           <div>
             <PeopleTable error={error} data={data} onShowChart={this.handleShowChart} onFilterChange={this.handleFilterChange}/>
