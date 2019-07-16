@@ -4,6 +4,12 @@ This demo was bootstrapped with [Create React App](https://github.com/facebook/c
 
 To test changes to lapidary change the version of lapidary in the demo's package.json file from `x.x.x` to `link..`
 
+## Deployment
+
+From the top level directory run
+
+### `bash publish-demo.sh`
+
 ## Available Scripts
 
 In the project directory, you can run:
