@@ -3,12 +3,12 @@ This demo was bootstrapped with [Create React App](https://github.com/facebook/c
 ## Development
 
 To test changes to lapidary change the version of lapidary in the demo's package.json file from `x.x.x` to `link..`
+Run `yarn watch` from the top level directory to ensure all changes to lapidary trigger a rebuild of the package.
+Run `yarn start` from the demo directory to view the demo in your browser.
 
 ## Deployment
 
-From the top level directory run
-
-### `bash publish-demo.sh`
+From the top level directory run `bash publish-demo.sh`
 
 ## Available Scripts
 
