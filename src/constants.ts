@@ -26,11 +26,6 @@ const COMPARISONS = [
   CONTAINS
 ]
 
-const AND = 'AND'
-const OR = 'OR'
-const NOT = 'NOT'
-const XOR = 'XOR'
-
 /* SUGGESTION REGEX */
 
 const FACET_SUGGESTION_REGEX = /\w+/gi
@@ -38,7 +33,6 @@ const FACET_SUGGESTION_REGEX = /\w+/gi
 /* END SUGGESTION REGEX */
 
 export {
-  AND,
   BETWEEN,
   CASE_INSENSITIVE_EQUAL,
   CASE_INSENSITIVE_NOT_EQUAL,
@@ -55,10 +49,7 @@ export {
   IS,
   LESS_THAN,
   LESS_THAN_OR_EQUAL,
-  NOT,
   NOT_EQUAL,
   NUMERIC,
-  OR,
-  STRING,
-  XOR
+  STRING
 }

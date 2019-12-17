@@ -4,10 +4,11 @@ import {
   FilterEvaluator,
   FilterGenerator,
   Facets,
-  Item
+  Item,
+  JoinType
 } from './types'
 import Lapidary from './lapidary'
-import { AND, OR, XOR, NOT } from './constants'
+//import { AND, OR, XOR, NOT } from './constants'
 import { splitBalanced, parenthesesAreBalanced } from './utilities'
 import { DefaultEvaluationGenerator } from './operations'
 
@@ -101,17 +102,17 @@ export const traverseEvaluationTree = (
   const tree = evalutionTree as EvaluationTree
 
   switch (tree.joinType) {
-    case AND:
+    case JoinType.AND:
       return (
         traverseEvaluationTree(item, tree.left, l) &&
         !tree.invert === traverseEvaluationTree(item, tree.right, l)
       )
-    case OR:
+    case JoinType.OR:
       return (
         traverseEvaluationTree(item, tree.left, l) ||
         !tree.invert === traverseEvaluationTree(item, tree.right, l)
       )
-    case XOR:
+    case JoinType.XOR:
       /* // from: http://www.howtocreate.co.uk/xor.html
         if( !foo != !bar ) {
           ...
@@ -141,10 +142,10 @@ export const recursivelyGenerateEvaluators = (
     // TODO: WTF does OR NOT do anyway??? test it!
     // "first:=:james OR NOT last:=:collins" is the inverse of "(NOT first:=:james) AND last:=:collins"
 
-    if (split[0] === NOT && split[1]) {
+    if (split[0] === JoinType.NOT && split[1]) {
       return {
         left: { filterEvaluator: alwaysTrueFilterEvaluator, raw: 'TRUE' }, // Make a dummy left side that will always return true
-        joinType: AND,
+        joinType: JoinType.AND,
         invert: true,
         right: recursivelyGenerateEvaluators(split.slice(1), facets)
       }
@@ -154,8 +155,8 @@ export const recursivelyGenerateEvaluators = (
       return recursivelyGenerateEvaluators(split[0], facets)
     }
     // Explicit join type
-    if (split[1] === OR || split[1] === AND || split[1] === XOR) {
-      const inverted = split[2] && split[2] === NOT
+    if (split[1] === JoinType.OR || split[1] === JoinType.AND || split[1] === JoinType.XOR) {
+      const inverted = split[2] && split[2] === JoinType.NOT
       return {
         left: recursivelyGenerateEvaluators(split[0], facets),
         joinType: split[1],
@@ -164,10 +165,10 @@ export const recursivelyGenerateEvaluators = (
       }
     }
     // Implicit "AND" join type
-    const inverted = split[1] && split[1] === NOT
+    const inverted = split[1] && split[1] === JoinType.NOT
     return {
       left: recursivelyGenerateEvaluators(split[0], facets),
-      joinType: AND,
+      joinType: JoinType.AND,
       invert: inverted, // "foo:=:bar NOT bar:=:foo"
       right: recursivelyGenerateEvaluators(split.slice(inverted ? 2 : 1), facets)
     }

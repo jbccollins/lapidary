@@ -5647,12 +5647,9 @@ var INCLUSIVE_BETWEEN = 'inbetween';
 var LESS_THAN = '<';
 var LESS_THAN_OR_EQUAL = '<=';
 var NOT_EQUAL = '!=';
-var AND = 'AND';
-var OR = 'OR';
-var NOT = 'NOT';
-var XOR = 'XOR';
 /* SUGGESTION REGEX */
 var FACET_SUGGESTION_REGEX = /\w+/gi;
+//# sourceMappingURL=constants.js.map
 
 var _a, _b, _c;
 var checkValue = function (v, facetKey) {
@@ -5848,6 +5845,17 @@ var DateOperations = (_c = {},
     _c[BETWEEN] = DateBetweenEvaluationGenerator,
     _c[INCLUSIVE_BETWEEN] = DateInclusiveBetweenEvaluationGenerator,
     _c);
+//# sourceMappingURL=operations.js.map
+
+/*** ENUMS ***/
+var JoinType;
+(function (JoinType) {
+    JoinType["AND"] = "AND";
+    JoinType["OR"] = "OR";
+    JoinType["XOR"] = "XOR";
+    JoinType["NOT"] = "NOT";
+})(JoinType || (JoinType = {}));
+/*** END INTERFACES ***/
 
 // https://gist.github.com/scottrippey/1349099
 var splitBalanced = function (input, 
@@ -5952,6 +5960,7 @@ var parenthesesAreBalanced = function (s) {
     }
     return stack.length === 0;
 };
+//# sourceMappingURL=utilities.js.map
 
 var FILTER_STRING_REGEX = /.+:.*:/gi;
 // const FILTER_STRING_REGEX = /.+:.*:.+/gi
@@ -6026,13 +6035,13 @@ var traverseEvaluationTree = function (item, evalutionTree, l) {
     }
     var tree = evalutionTree;
     switch (tree.joinType) {
-        case AND:
+        case JoinType.AND:
             return (traverseEvaluationTree(item, tree.left, l) &&
                 !tree.invert === traverseEvaluationTree(item, tree.right, l));
-        case OR:
+        case JoinType.OR:
             return (traverseEvaluationTree(item, tree.left, l) ||
                 !tree.invert === traverseEvaluationTree(item, tree.right, l));
-        case XOR:
+        case JoinType.XOR:
             /* // from: http://www.howtocreate.co.uk/xor.html
               if( !foo != !bar ) {
                 ...
@@ -6055,10 +6064,10 @@ var recursivelyGenerateEvaluators = function (split, facets) {
         // the alwaysTrueFilterEvaluator will cause them to always be true.
         // TODO: WTF does OR NOT do anyway??? test it!
         // "first:=:james OR NOT last:=:collins" is the inverse of "(NOT first:=:james) AND last:=:collins"
-        if (split[0] === NOT && split[1]) {
+        if (split[0] === JoinType.NOT && split[1]) {
             return {
                 left: { filterEvaluator: alwaysTrueFilterEvaluator, raw: 'TRUE' },
-                joinType: AND,
+                joinType: JoinType.AND,
                 invert: true,
                 right: recursivelyGenerateEvaluators(split.slice(1), facets)
             };
@@ -6068,8 +6077,8 @@ var recursivelyGenerateEvaluators = function (split, facets) {
             return recursivelyGenerateEvaluators(split[0], facets);
         }
         // Explicit join type
-        if (split[1] === OR || split[1] === AND || split[1] === XOR) {
-            var inverted_1 = split[2] && split[2] === NOT;
+        if (split[1] === JoinType.OR || split[1] === JoinType.AND || split[1] === JoinType.XOR) {
+            var inverted_1 = split[2] && split[2] === JoinType.NOT;
             return {
                 left: recursivelyGenerateEvaluators(split[0], facets),
                 joinType: split[1],
@@ -6078,10 +6087,10 @@ var recursivelyGenerateEvaluators = function (split, facets) {
             };
         }
         // Implicit "AND" join type
-        var inverted = split[1] && split[1] === NOT;
+        var inverted = split[1] && split[1] === JoinType.NOT;
         return {
             left: recursivelyGenerateEvaluators(split[0], facets),
-            joinType: AND,
+            joinType: JoinType.AND,
             invert: inverted,
             right: recursivelyGenerateEvaluators(split.slice(inverted ? 2 : 1), facets)
         };
@@ -6099,6 +6108,7 @@ var generateEvaluationTree = function (input, facets) {
     var evaluationTree = recursivelyGenerateEvaluators(split, facets);
     return evaluationTree;
 };
+//# sourceMappingURL=helpers.js.map
 
 var Lapidary = /** @class */ (function () {
     function Lapidary(items, facets, options) {
@@ -6168,6 +6178,7 @@ var Lapidary = /** @class */ (function () {
     }
     return Lapidary;
 }());
+//# sourceMappingURL=lapidary.js.map
 
 export default Lapidary;
 export { StringOperations, NumericOperations, DateOperations, Lapidary };

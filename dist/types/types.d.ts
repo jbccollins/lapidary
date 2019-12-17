@@ -1,4 +1,12 @@
 import Lapidary from './lapidary';
+/*** ENUMS ***/
+export declare enum JoinType {
+    AND = "AND",
+    OR = "OR",
+    XOR = "XOR",
+    NOT = "NOT"
+}
+/*** END ENUMS ***/
 /*** TYPES ***/
 export declare type FilterEvaluator = (item: Item, l: Lapidary) => boolean;
 export declare type FilterGenerator = (facetKey: keyof Facets, parameters: any) => FilterEvaluator;
@@ -13,7 +21,7 @@ export declare type EvaluationTree = {
     left: EvaluationTree | EvaluationTreeLeaf | null;
     right: EvaluationTree | EvaluationTreeLeaf | null;
     invert: boolean;
-    joinType: string;
+    joinType: JoinType;
 };
 export declare type EvaluationTreeLeaf = {
     filterEvaluator: FilterEvaluator;
