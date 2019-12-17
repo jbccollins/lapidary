@@ -6226,10 +6226,10 @@ kleur@^3.0.2:
   resolved "https://registry.yarnpkg.com/kleur/-/kleur-3.0.3.tgz#a79c9ecc86ee1ce3fa6206d1216c501f147fc07e"
   integrity sha512-eTIzlVOSUR+JxdDFepEYcBMtZ9Qqdef+rnzWdRZuMbOywu5tO2w2N7rqjoANZ5k9vywhL6Br1VRjUIgTQx4E8w==
 
-lapidary@^0.1.3:
-  version "0.1.3"
-  resolved "https://registry.yarnpkg.com/lapidary/-/lapidary-0.1.3.tgz#cd6b12b8151cd2f70adce689113015d7b6bf6431"
-  integrity sha512-63TmUKst8BL1QLS5AzPeKBH8arXv2AzG5I9qOBjiItYV0aRCq/BS0JNt+lSKk4FMY+EtKEBpnSHDe7J/cd2q0g==
+lapidary@^0.1.4:
+  version "0.1.4"
+  resolved "https://registry.yarnpkg.com/lapidary/-/lapidary-0.1.4.tgz#faa0fdf9e5d3ce41d03192cb075f7155f7aa7d5c"
+  integrity sha512-hG9LHGKXQtlx9ruYwctkd/xcBLBwVfnh76MrN0JWoqwsycdAJg2uCuSd3xTbBFzGYhcg9f22Z695/Tspm5eUYw==
   dependencies:
     "@types/lodash.partition" "^4.6.4"
     date-fns "^1.30.1"
