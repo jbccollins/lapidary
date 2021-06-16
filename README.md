@@ -100,3 +100,5 @@ What you really want is
 Lapidary is heavily inspired by [Destiny Item Manager](https://github.com/DestinyItemManager/DIM)'s inventory search feature.
 
 ![](https://i.imgur.com/az5M2kM.png)
+
+test
